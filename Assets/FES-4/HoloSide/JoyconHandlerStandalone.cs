@@ -54,18 +54,21 @@ public class JoyconHandlerStandalone : MonoBehaviour
     {
         m_transform = gameObject.transform;
         // _tcpCcliant = new TCPCliant(port, ip);
-        if (TCPCliantManagaer.instance.tcpCcliants.Count - 1 < id)
+        if (TCPCliantManager.instance.tcpCcliants.Count - 1 < id)
         {
             Debug.Log("クライアントが存在しません: " + id);
             return;
         }
-        _tcpCcliant = TCPCliantManagaer.instance.tcpCcliants[id];
+        _tcpCcliant = TCPCliantManager.instance.tcpCcliants[id];
         _tcpCcliant.AddReceiveEvent(ReceivedMessage);
     }
 
     private void Update()
     {
-        _tcpCcliant.SendMessage(request_bytes);
+        if(_tcpCcliant != null)
+        {
+            _tcpCcliant.SendMessage(request_bytes);
+        }
 
         while (_queue.Count > 0)
         {

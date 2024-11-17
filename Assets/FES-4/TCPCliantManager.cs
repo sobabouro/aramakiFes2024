@@ -16,14 +16,14 @@ using Windows.Networking.Sockets;
 #endif
 
 
-public class TCPCliantManagaer : MonoBehaviour
+public class TCPCliantManager : MonoBehaviour
 {
 
     [SerializeField, Tooltip("ポート番号")] private int port = 50000;
     [SerializeField, Tooltip("IPアドレス")] private string ip = "192.168.20.14";
     public List<TCPCliant> tcpCcliants = new List<TCPCliant>();
 
-    public static TCPCliantManagaer instance;
+    public static TCPCliantManager instance;
     private void Awake()
     {
         // シングルトンの呪文
