@@ -1624,6 +1624,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   surfaceMat: {fileID: 2100000, guid: f09598de1e0c79b4a9bdb199ff896ed8, type: 2}
+  generatePrefab: {fileID: 0}
 --- !u!54 &1533525387
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1869,19 +1870,6 @@ MonoBehaviour:
       reference: MixedReality.Toolkit.SpatialManipulation.RotateLogic, MixedReality.Toolkit.SpatialManipulation
     scaleLogicType:
       reference: MixedReality.Toolkit.SpatialManipulation.ScaleLogic, MixedReality.Toolkit.SpatialManipulation
---- !u!114 &1533525389
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1533525377}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d73ae045c732754599831c93532423b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  surfaceMat: {fileID: 2100000, guid: f09598de1e0c79b4a9bdb199ff896ed8, type: 2}
 --- !u!1 &1577123080 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: -7067047293170114150, guid: b9e071f6360e1314faf0c844c07f73d2, type: 3}

@@ -145,7 +145,8 @@ public class Breakable : MonoBehaviour
             case Type.slash:
                 // Slashクラスを呼び出す
                 _slash.CallSlash(breaker);
-                ScoreController.instance.AddScore(_score);
+                Debug.Log("call Slash");
+				ScoreController.instance.AddScore(_score);
                 break;
             case Type.crash:
                 // Crashクラスを呼び出す

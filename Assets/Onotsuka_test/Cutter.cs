@@ -42,12 +42,17 @@ public class Cutter : MonoBehaviour {
         // 平面の距離を計算：平面の法線ベクトルからワールド空間の任意の点（例えば collisionPositionWorld）への距離
         float worldDistance = Vector3.Dot(worldNormal, collisionPositionWorld);
 
+        //Transform transform = this.gameObject.transform;
+        Mesh mesh = collision.gameObject.GetComponent<MeshFilter>().mesh;
+
+        Transform target_transform = collision.gameObject.transform;
+
         //// カッターの平面を相手のローカル座標で設定
         //var cutter = new Plane(localNormal, collisionPositionLocal);
 
         // カッターの平面をワールド座標で設定
         var cutter = new Plane(worldNormal, worldDistance);
 
-        ActSubdivide.Subdivide(collision.gameObject, cutter, surfaceMat);
+        ActSubdivide4.Subdivide(mesh, target_transform, cutter, surfaceMat);
     }
 }

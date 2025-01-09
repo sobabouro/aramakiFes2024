@@ -181,7 +181,9 @@ public class ActSubdivide4 {
             backMesh.SetIndices(mesh_left.submesh[i].ToArray(), MeshTopology.Triangles, i, false);
         }
 
-        return (frontMesh, backMesh);
+        Debug.Log("切断処理が完了しました");
+
+		return (frontMesh, backMesh);
     }
 
     // 切断面上メッシュ情報を挿入する
