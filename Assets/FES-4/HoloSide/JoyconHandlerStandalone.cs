@@ -6,8 +6,7 @@ using UnityEngine.Events;
 
 public class JoyconHandlerStandalone : MonoBehaviour
 {
-    [SerializeField, Tooltip("ポート番号")] private int port = 50000;
-    [SerializeField, Tooltip("IPアドレス")] private string ip = "192.168.20.14";
+    [SerializeField, Tooltip("JoyconID")] private int id = 0;
 
     [Header("Button Eventt")]
     [SerializeField] private UnityEvent PressedUpButtonEvents;
@@ -54,13 +53,22 @@ public class JoyconHandlerStandalone : MonoBehaviour
     private void Start()
     {
         m_transform = gameObject.transform;
-        _tcpCcliant = new TCPCliant(port, ip);
+        // _tcpCcliant = new TCPCliant(port, ip);
+        if (TCPCliantManager.instance.tcpCcliants.Count - 1 < id)
+        {
+            Debug.Log("クライアントが存在しません: " + id);
+            return;
+        }
+        _tcpCcliant = TCPCliantManager.instance.tcpCcliants[id];
         _tcpCcliant.AddReceiveEvent(ReceivedMessage);
     }
 
     private void Update()
     {
-        _tcpCcliant.SendMessage(request_bytes);
+        if(_tcpCcliant != null)
+        {
+            _tcpCcliant.SendMessage(request_bytes);
+        }
 
         while (_queue.Count > 0)
         {
