@@ -16,14 +16,14 @@ using Windows.Networking.Sockets;
 #endif
 
 
-public class TCPCliantManagaer : MonoBehaviour
+public class TCPCliantManager : MonoBehaviour
 {
 
-    [SerializeField, Tooltip("ポート番号")] private int port = 50000;
-    [SerializeField, Tooltip("IPアドレス")] private string ip = "192.168.20.14";
+    [SerializeField, Tooltip("ポート番号")] private List<int> ports = new List<int>() { 50000, 50001, 50002 };
+    [SerializeField, Tooltip("IPアドレス")] private string ip = "192.168.20.44";
     public List<TCPCliant> tcpCcliants = new List<TCPCliant>();
 
-    public static TCPCliantManagaer instance;
+    public static TCPCliantManager instance;
     private void Awake()
     {
         // シングルトンの呪文
@@ -41,6 +41,9 @@ public class TCPCliantManagaer : MonoBehaviour
 
     private void Start()
     {
-        tcpCcliants.Add(new TCPCliant(port, ip));
+        foreach (var port in ports)
+        {
+            tcpCcliants.Add(new TCPCliant(port, ip));
+        }
     }
 }

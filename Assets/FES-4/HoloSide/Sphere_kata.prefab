@@ -110,8 +110,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c99cdea318234cd45a0dd39346a0615b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  port: 50002
-  ip: 192.168.20.14
+  id: 2
   PressedUpButtonEvents:
     m_PersistentCalls:
       m_Calls: []
@@ -227,8 +226,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c99cdea318234cd45a0dd39346a0615b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  port: 50000
-  ip: 192.168.20.14
+  id: 0
   PressedUpButtonEvents:
     m_PersistentCalls:
       m_Calls: []
@@ -344,8 +342,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c99cdea318234cd45a0dd39346a0615b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  port: 50001
-  ip: 192.168.20.14
+  id: 1
   PressedUpButtonEvents:
     m_PersistentCalls:
       m_Calls: []
