@@ -471,7 +471,7 @@ public class ActSubdivide5 {
         ) {
             indexInLeftMesh = _leftTracker;
             indexInRightMesh = _rightTracker;
-            vertexDomein = (_leftTracker << 16) | _rightTracker;
+            vertexDomein = (_rightTracker << 16) | _leftTracker;
             ratio = _ratio;
             position = _position;
         }
