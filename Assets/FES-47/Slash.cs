@@ -36,7 +36,7 @@ public class Slash : MonoBehaviour
     {
         // カッターの法線ベクトルをワールド空間で計算
         Vector3 worldNormal = Vector3.Cross(transform.forward.normalized, moveDirection).normalized;
-        Debug.DrawRay(worldPoint, worldNormal, Color.green, 2, false);
+        Debug.DrawRay(worldPoint, worldNormal * 0.1f, Color.green, 2, false);
         // 平面の距離を計算：平面の法線ベクトルからワールド空間の任意の点への距離
         float worldDistance = Vector3.Dot(worldNormal, worldPoint);
         // 断面を相手のワールド座標で設定
@@ -85,7 +85,7 @@ public class Slash : MonoBehaviour
         Mesh mesh = this.gameObject.GetComponent<MeshFilter>().mesh;
         Plane cutter = CalcCutterPlane(breaker.GetContactPoint(), breaker.GetMoveDirection());
         // 切断された後のオブジェクトに割り当てるメッシュを計算する。
-        (Mesh rightMesh, Mesh leftMesh) = ActSubdivide4.Subdivide(mesh, transform, cutter, canAddCutSurfaceMaterial);
+        (Mesh rightMesh, Mesh leftMesh) = ActSubdivide5.Subdivide(mesh, transform, cutter, canAddCutSurfaceMaterial);
 
         // 失敗
         if (rightMesh == null || leftMesh == null)

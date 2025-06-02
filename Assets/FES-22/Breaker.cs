@@ -91,7 +91,9 @@ public class Breaker : MonoBehaviour
         if (collision.contactCount > 0)
         {
             _contactPoint = collision.contacts[0].point;
-        } else {
+			// 衝突位置を描画
+			Debug.DrawRay(_contactPoint, Vector3.up * 0.1f, Color.red, 2, false);
+		} else {
             // クソみたいなバグ
             _contactPoint = collision.collider.ClosestPoint(transform.position);
         }

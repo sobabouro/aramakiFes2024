@@ -18,6 +18,18 @@ public class ActSubdivide5 {
         bool addNewMeshIndices = false
     ) {
 
+        GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Quad);
+        plane.transform.localScale = new Vector3(1, 1, 1);
+        plane.transform.position = targetTransform.TransformPoint(cutter.normal * cutter.distance);
+        plane.transform.rotation = Quaternion.LookRotation(cutter.normal);
+        Material planeMaterial = new Material(Shader.Find("Standard"));
+        plane.GetComponent<Renderer>().material = new Material(Shader.Find("Custom/FrontBlueBackRedShader"));
+        // コライダー削除
+        Collider collider = plane.GetComponent<Collider>();
+        if (collider != null) {
+            GameObject.Destroy(collider);
+        }
+
         if (cutter.normal == Vector3.zero) {
             Debug.LogError("平面が平行です");
 
@@ -225,6 +237,8 @@ public class ActSubdivide5 {
 
         Vector3 newVertex_toward = Vector3.Lerp(right_toward_vec, left_toward_vec, ratio_toward);
         Vector3 newVertex_away = Vector3.Lerp(right_away_vec, left_away_vec, ratio_away);
+        Debug.DrawRay(newVertex_toward, Vector3.up * 0.005f, Color.red, 2, false);
+        Debug.DrawRay(newVertex_away, Vector3.up * 0.005f, Color.blue, 2, false);
         int edgeDirection = ToIntFromVector3((newVertex_away - newVertex_toward).normalized);
 
         // 新頂点情報を生成する
