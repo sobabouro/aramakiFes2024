@@ -192,7 +192,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8863050549836897107, guid: 26a2934cd0bccea4984057bf26a22a98, type: 3}
       propertyPath: _maxDurability
-      value: 100
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8863050549836897109, guid: 26a2934cd0bccea4984057bf26a22a98, type: 3}
       propertyPath: m_Drag
@@ -827,6 +827,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1167776057, guid: 4bcd56fd30a8a77418a001d2f023e282, type: 3}
+      propertyPath: _maxDurability
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 2341763292341991811, guid: 4bcd56fd30a8a77418a001d2f023e282, type: 3}
       propertyPath: weaponEffects.Array.size
       value: 3
@@ -1678,7 +1682,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8863050549836897107, guid: 26a2934cd0bccea4984057bf26a22a98, type: 3}
       propertyPath: _maxDurability
-      value: 100
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8863050549836897109, guid: 26a2934cd0bccea4984057bf26a22a98, type: 3}
       propertyPath: m_Drag
