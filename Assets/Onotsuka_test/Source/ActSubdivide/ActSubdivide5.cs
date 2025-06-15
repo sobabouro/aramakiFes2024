@@ -53,6 +53,7 @@ public class ActSubdivide5 : MonoBehaviour {
 
         // 切断前オブジェクトのメッシュ情報の整理
         MeshContainer originMesh = new MeshContainer(targetMesh);
+
         // 切断後のメッシュ情報を格納
         MeshContainer frontsideMesh = new MeshContainer();
         MeshContainer backsideMesh = new MeshContainer();
