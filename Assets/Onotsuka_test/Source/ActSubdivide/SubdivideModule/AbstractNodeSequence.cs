@@ -1,0 +1,50 @@
+using System.Collections.Generic;
+
+/// <summary>
+/// 連結した要素の管理を行う抽象基底クラス
+/// </summary>
+/// <typeparam name="T"> ノードとして管理するオブジェクト </typeparam>
+public abstract class AbstractNodeSequence<T> : INodeSequenceMergeStrategy<T> 
+    where T : class {
+
+    /// <summary>
+    /// 連結リストを保持する双方向リスト
+    /// 派生クラスからはアクセス可
+    /// </summary>
+    protected readonly LinkedList<T> _nodeSequence = new LinkedList<T>();
+
+    public LinkedListNode<T>? First => _nodeSequence.First;
+    public LinkedListNode<T>? Last => _nodeSequence.Last;
+
+    /// <summary>
+    /// 連結要素の後ろに要素を追加できるか試みる (抽象メソッド)
+    /// </summary>
+    public abstract bool TryAppend(params object[] args);
+
+    /// <summary>
+    /// 連結要素の前に要素を追加できるか試みる (抽象メソッド)
+    /// </summary>
+    public abstract bool TryPrepend(params object[] args);
+
+    /// <summary>
+    /// この連結要素の後ろに他の連結要素をマージする
+    /// </summary>
+    /// <param name="other">マージする他の要素</param>
+    public void MergeAfter(AbstractNodeSequence<T> other) {
+        foreach (var otherItem in other._nodeSequence) {
+            _nodeSequence.AddLast(otherItem);
+        }
+    }
+
+    /// <summary>
+    /// この連結要素の前に他の連結要素をマージする
+    /// </summary>
+    /// <param name="other">マージする他の要素</param>
+    public void MergeBefore(AbstractNodeSequence<T> other) {
+        var node = other._nodeSequence.Last;
+        while (node != null) {
+            _nodeSequence.AddFirst(node.Value);
+            node = node.Previous;
+        }
+    }
+}

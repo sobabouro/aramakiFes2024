@@ -5,36 +5,21 @@ using UnityEngine;
 /// 連結ポリゴンの情報を保持するクラス
 /// 連結ポリゴンは切断辺の始点から終点の順を正方向として連結する
 /// </summary>
-public class LinkedPolygon {
-
-    /// <summary>
-    /// 連結ポリゴンの情報を保持するための双方向リスト
-    /// </summary>
-    private readonly LinkedList<NewPolygon> _linkedPolygon = new LinkedList<NewPolygon>();
-
-    /// <summary>
-    /// 連結ポリゴンの先頭を取得するプロパティ
-    /// </summary>
-    public LinkedListNode<NewPolygon>? First => _linkedPolygon.First;
-
-    /// <summary>
-    /// 連結ポリゴンの末尾を取得するプロパティ
-    /// </summary>
-    public LinkedListNode<NewPolygon>? Last => _linkedPolygon.Last;
+public class LinkedPolygon : AbstractNodeSequence<NewPolygon> {
 
     /// <summary>
     /// 対象ポリゴンを連結ポリゴンに対して後ろに追加するメソッド
     /// </summary>
-    /// <param name="polygon"> 追加したいポリゴン </param>
+    /// <param name="args"> 追加するポリゴン情報を含む引数 </param>
     /// <returns> 追加に成功した場合は true, 失敗した場合は false </returns>
-    public bool TryAppend(NewPolygon polygon) {
-        if (_linkedPolygon.Last?.Value.NewEdgeAway.Domein == polygon.NewEdgeToward.Domein || First == null) {
-            _linkedPolygon.AddLast(polygon);
+    public override bool TryAppend(params object[] args) {
+        if (args.Length != 1 || !(args[0] is NewPolygon polygon)) {
+            Debug.LogError("TryAppend for LinkedPolygon requires one NewPolygon argument.");
+            return false;
+        }
 
-            //uint frontIndex = polygon.NewEdgeToward.Domein >> 16;
-            //uint backIndex = polygon.NewEdgeToward.Domein & 0x0000FFFF;
-            //Debug.Log($"LinkedPolygon: Append polygon with edge [{frontIndex}], [{backIndex}].");
-
+        if (_nodeSequence.Last?.Value.NewEdgeAway.Domein == polygon.NewEdgeToward.Domein || First == null) {
+            _nodeSequence.AddLast(polygon);
             return true;
         }
         return false;
@@ -43,40 +28,19 @@ public class LinkedPolygon {
     /// <summary>
     /// 対象ポリゴンを連結ポリゴンに対して前に追加するメソッド
     /// </summary>
-    /// <param name="polygon"> 追加したいポリゴン </param>
+    /// <param name="args"> 追加するポリゴン情報を含む引数 </param>
     /// <returns> 追加に成功した場合は true, 失敗した場合は false </returns>
-    public bool TryPrepend(NewPolygon polygon) {
-        if (_linkedPolygon.First?.Value.NewEdgeToward.Domein == polygon.NewEdgeAway.Domein) {
-            _linkedPolygon.AddFirst(polygon);
+    public override bool TryPrepend(params object[] args) {
+        if (args.Length != 1 || !(args[0] is NewPolygon polygon)) {
+            Debug.LogError("TryPrepend for LinkedPolygon requires one NewPolygon argument.");
+            return false;
+        }
 
-            //uint frontIndex = polygon.NewEdgeToward.Domein >> 16;
-            //uint backIndex = polygon.NewEdgeToward.Domein & 0x0000FFFF;
-            //Debug.Log($"LinkedPolygon: Prepend polygon with edge [{frontIndex}], [{backIndex}].");
-
+        if (_nodeSequence.First?.Value.NewEdgeToward.Domein == polygon.NewEdgeAway.Domein) {
+            _nodeSequence.AddFirst(polygon);
             return true;
         }
         return false;
-    }
-
-    /// <summary>
-    /// この連結ポリゴンの後ろに他の連結ポリゴンをマージするメソッド
-    /// </summary>
-    /// <param name="other"></param>
-    public void MergeAfter(LinkedPolygon other) {
-        foreach (var otherPolygon in other._linkedPolygon)
-            _linkedPolygon.AddLast(otherPolygon);
-    }
-
-    /// <summary>
-    /// この連結ポリゴンの前に他の連結ポリゴンをマージするメソッド
-    /// </summary>
-    /// <param name="other"></param>
-    public void MergeBefore(LinkedPolygon other) {
-        var node = other._linkedPolygon.Last;
-        while (node != null) {
-            _linkedPolygon.AddFirst(node.Value);
-            node = node.Previous;
-        }
     }
 
     /// <summary>
@@ -117,7 +81,7 @@ public class LinkedPolygon {
         // frontside 用に連結ポリゴンのノードを辿りながらポリゴン情報を生成する
         ScanNode(
             First, 
-            _linkedPolygon.Count, 
+            _nodeSequence.Count, 
             frontsideMesh, 
             frontsideNewStartIndex, 
             frontsideNewEndIndex, 
@@ -128,7 +92,7 @@ public class LinkedPolygon {
         // backside 用に連結ポリゴンのノードを辿りながらポリゴン情報を生成する
         ScanNode(
             Last, 
-            _linkedPolygon.Count, 
+            _nodeSequence.Count, 
             backsideMesh, 
             backsideNewStartIndex, 
             backsideNewEndIndex, 

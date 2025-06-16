@@ -1,46 +1,47 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 連結ポリゴン (LinkedPolygon) のリストを管理するクラス
+/// 連結ポリゴンシーケンス (LinkedPolygon) のリストを管理するクラス
 /// </summary>
-public class LinkedPolygonList {
+public class LinkedPolygonList : AbstractNodeSequenceList<LinkedPolygon, NewPolygon> {
 
     /// <summary>
-    /// 連結ポリゴンのリスト
+    /// 連結ポリゴンシーケンスのリストに対して、所属すべきシーケンスに新ポリゴンを追加するメソッド
     /// </summary>
-    private readonly List<LinkedPolygon> _linkedPolygonList = new List<LinkedPolygon>();
-
-    /// <summary>
-    /// 連結ポリゴンの数を取得するプロパティ
-    /// </summary>
-    public int Count {
-        get {
-            return _linkedPolygonList.Count;
+    /// <param name="args"> 追加するポリゴン情報を含む引数 </param>
+    public override void Add(params object[] args) {
+        if (args.Length != 1 || !(args[0] is NewPolygon polygon)) {
+            return;
         }
-    }
-    /// <summary>
-    /// リストに新しいポリゴンを追加するメソッド
-    /// </summary>
-    /// <param name="target"> 追加するポリゴン </param>
-    public void Add(NewPolygon target) {
-        for (int i = 0; i < _linkedPolygonList.Count; i++) {
-            var current = _linkedPolygonList[i];
+        for (int i = 0; i < _nodeSequenceList.Count; i++) {
+            var current = _nodeSequenceList[i];
 
-            if (current.TryAppend(target)) {
-                TryMergeAfter(i, target.NewEdgeAway.Domein);
+            if (current.TryAppend(polygon)) {
+                TryMergeAfter(i, polygon);
                 return;
             }
-            if (current.TryPrepend(target)) {
-                TryMergeBefore(i, target.NewEdgeToward.Domein);
+            if (current.TryPrepend(polygon)) {
+                TryMergeBefore(i, polygon);
                 return;
             }
         }
-
         // どの連結ポリゴンにも追加できなかった場合は新しい連結ポリゴンを作成する
         var newLinked = new LinkedPolygon();
-        newLinked.TryAppend(target);
-        _linkedPolygonList.Add(newLinked);
+        newLinked.TryAppend(polygon);
+        _nodeSequenceList.Add(newLinked);
+    }
+
+    /// <summary>
+    /// シーケンス同士のマージ可能性を判定するメソッド
+    /// </summary>
+    /// <param name="target"> あるシーケンスの先頭または末尾の連結ポリゴンの要素 </param>
+    /// <param name="key"> Add() によって追加されたポリゴン </param>
+    /// <param name="isAfter"> 前後のどちらに対してマージを試みるかを示すフラグ </param>
+    /// <returns></returns>
+    protected override bool CheckMerge(NewPolygon target, NewPolygon key, bool isAfter) {
+        if (target == null)
+            return false;
+        return isAfter ? target.NewEdgeToward.Domein == key.NewEdgeAway.Domein : target.NewEdgeAway.Domein == key.NewEdgeToward.Domein;
     }
 
     /// <summary>
@@ -59,7 +60,7 @@ public class LinkedPolygonList {
         MeshContainer backsideMesh,
         CutSurfaceVertexBuffer cutSurfaceVertexBuffer
     ) {
-        foreach (var linkedPolygon in _linkedPolygonList) {
+        foreach (var linkedPolygon in _nodeSequenceList) {
             if (linkedPolygon.First == null || linkedPolygon.Last == null)
                 continue;
             linkedPolygon.MakePolygon(
@@ -70,36 +71,6 @@ public class LinkedPolygonList {
                 backsideMesh,
                 cutSurfaceVertexBuffer
             );
-        }
-    }
-
-    /// <summary>
-    /// リスト中の指定されたインデックスの連結ポリゴンに対して、後ろにマージできる連結ポリゴンを探してマージを試みるメソッド
-    /// Add() メソッドの前ループで、TryPrepend() で、追加ポリゴンの前への連結判定は済んでいるので、処理対象の連結ポリゴンよりも後ろの要素のみマージ判定を行えばよい
-    /// </summary>
-    /// <param name="index"> 連結ポリゴンのリストインデックス </param>
-    /// <param name="edgeEnd"> 連結ポリゴンの末尾の終点頂点ドメイン </param>
-    private void TryMergeAfter(int index, uint edgeEnd) {
-        for (int j = _linkedPolygonList.Count - 1; j > index; j--) {
-            if (_linkedPolygonList[j].First?.Value.NewEdgeToward.Domein == edgeEnd) {
-                _linkedPolygonList[index].MergeAfter(_linkedPolygonList[j]);
-                _linkedPolygonList.RemoveAt(j);
-            }
-        }
-    }
-
-    /// <summary>
-    /// リスト中の指定されたインデックスの連結ポリゴンに対して、前にマージできる連結ポリゴンを探してマージを試みるメソッド
-    /// Add() メソッドの前ループで、TryAppend() で、追加ポリゴンの後ろへの連結判定は済んでいるので、処理対象の連結ポリゴンよりも後ろの要素のみマージ判定を行えばよい
-    /// </summary>
-    /// <param name="index"> 連結ポリゴンのインデックス </param>
-    /// <param name="edgeStart"> 連結ポリゴンの先頭の始点頂点ドメイン </param>
-    private void TryMergeBefore(int index, uint edgeStart) {
-        for (int j = _linkedPolygonList.Count - 1; j > index; j--) {
-            if (_linkedPolygonList[j].Last?.Value.NewEdgeAway.Domein == edgeStart) {
-                _linkedPolygonList[index].MergeBefore(_linkedPolygonList[j]);
-                _linkedPolygonList.RemoveAt(j);
-            }
         }
     }
 }
