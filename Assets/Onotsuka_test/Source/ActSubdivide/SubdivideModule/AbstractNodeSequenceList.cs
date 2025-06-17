@@ -12,7 +12,7 @@ public abstract class AbstractNodeSequenceList<TNodeSequence, TItem>
     /// <summary>
     /// 連結した要素のシーケンスを保持するリスト
     /// </summary>
-    protected readonly List<TNodeSequence> _nodeSequenceList = new List<TNodeSequence>();
+    protected readonly List<TNodeSequence> _nodeSequenceList = new();
 
     /// <summary>
     /// シーケンスのリストの要素数を取得するプロパティ

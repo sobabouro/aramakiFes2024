@@ -11,10 +11,22 @@ public abstract class AbstractNodeSequence<T> : INodeSequenceMergeStrategy<T>
     /// 連結リストを保持する双方向リスト
     /// 派生クラスからはアクセス可
     /// </summary>
-    protected readonly LinkedList<T> _nodeSequence = new LinkedList<T>();
+    protected readonly LinkedList<T> _nodeSequence = new();
 
+    /// <summary>
+    /// 連結シーケンスの先頭の要素を取得するプロパティ
+    /// </summary>
     public LinkedListNode<T>? First => _nodeSequence.First;
+
+    /// <summary>
+    /// 連結シーケンスの末尾の要素を取得するプロパティ
+    /// </summary>
     public LinkedListNode<T>? Last => _nodeSequence.Last;
+
+    /// <summary>
+    /// 連結要素のシーケンスを取得するプロパティ
+    /// </summary>
+    protected LinkedList<T> NodeSequence => _nodeSequence;
 
     /// <summary>
     /// 連結要素の後ろに要素を追加できるか試みる (抽象メソッド)

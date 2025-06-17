@@ -41,8 +41,8 @@ public readonly struct SideIndexInfo {
         IList<int> frontIndices,
         IList<int> backIndices
     ) {
-        List<int> frontList = new List<int>(frontIndices);
-        List<int> backList = new List<int>(backIndices);
+        List<int> frontList = new(frontIndices);
+        List<int> backList = new(backIndices);
         if (frontList.Count == 1) {
             FrontTowardIndex = FrontAwayIndex = frontList[0];
             BackTowardIndex = backList[0];

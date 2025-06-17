@@ -61,7 +61,7 @@ public class LinkedPolygon : AbstractNodeSequence<NewPolygon> {
         MeshContainer originMesh,
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh,
-        CutSurfaceVertexBuffer cutSurfaceVertexBuffer
+        LinkedVertexList linkedVertexList
     ) {
         NewVertex toward = First.Value.NewEdgeToward;
         NewVertex away = Last.Value.NewEdgeAway;
@@ -76,7 +76,9 @@ public class LinkedPolygon : AbstractNodeSequence<NewPolygon> {
 
         toward.SetNewInfo(frontsideNewStartIndex, backsideNewEndIndex, towardPosition);
         away.SetNewInfo(frontsideNewEndIndex, backsideNewStartIndex, awayPosition);
-        cutSurfaceVertexBuffer.Add(toward, away);
+        linkedVertexList.Add(toward, away);
+
+        Debug.Log($"LinkedPolygon: VertexList added vertex front index - toward ({toward.FrontNewIndex}), away({away.FrontNewIndex})");
 
         // frontside 用に連結ポリゴンのノードを辿りながらポリゴン情報を生成する
         ScanNode(

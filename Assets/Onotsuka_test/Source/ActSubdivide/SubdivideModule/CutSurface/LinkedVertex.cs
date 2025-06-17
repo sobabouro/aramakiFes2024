@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -21,6 +22,11 @@ public class LinkedVertex :AbstractNodeSequence<NewVertex> {
 
             return true;
         }
+        if (First == null) {
+            _nodeSequence.AddFirst(toward);
+            _nodeSequence.AddLast(away);
+            return true;
+        }
         return false;
     }
 
@@ -40,5 +46,11 @@ public class LinkedVertex :AbstractNodeSequence<NewVertex> {
             return true;
         }
         return false;
+    }
+
+    public void Display() {
+        foreach (var vertex in _nodeSequence) {
+            Debug.Log($"LinkedVertex: frontNewIndex - {vertex.FrontNewIndex}, backNewIndex - {vertex.BackNewIndex}, position - {vertex.Position}");
+        }
     }
 }

@@ -27,36 +27,21 @@ public class ActSubdivide5 : MonoBehaviour {
         Plane cutter,
         bool addCutSurfaceMaterial = false
     ) {
-        // ==== デバッグ用 ====
-        //GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Quad);
-        //plane.transform.localScale = new Vector3(1, 1, 1);
-        //plane.transform.position = targetTransform.TransformPoint(cutter.normal * cutter.distance);
-        //plane.transform.rotation = Quaternion.LookRotation(cutter.normal);
-        //Material planeMaterial = new Material(Shader.Find("Standard"));
-        //plane.GetComponent<Renderer>().material = new Material(Shader.Find("Custom/FrontBlueBackRedShader"));
-        // コライダー削除
-        //Collider collider = plane.GetComponent<Collider>();
-        //if (collider != null) {
-        //    GameObject.Destroy(collider);
-        //}
-        // ==== デバッグ用 ====
-
-
         // 切断平面が平行だと切断できないので、null を返す
         if (cutter.normal == Vector3.zero) {
             Debug.LogError("平面が平行です");
 
-            Mesh empty = new Mesh();
+            Mesh empty = new();
             empty.vertices = new Vector3[] { };
             return (null, null);
         }
 
         // 切断前オブジェクトのメッシュ情報の整理
-        MeshContainer originMesh = new MeshContainer(targetMesh);
+        MeshContainer originMesh = new(targetMesh);
 
         // 切断後のメッシュ情報を格納
-        MeshContainer frontsideMesh = new MeshContainer();
-        MeshContainer backsideMesh = new MeshContainer();
+        MeshContainer frontsideMesh = new();
+        MeshContainer backsideMesh = new();
 
         // 切断対象の頂点の切断平面との位置関係の判定用
         bool[] getsideTruth = new bool[originMesh.Vertices.Count];
@@ -65,7 +50,7 @@ public class ActSubdivide5 : MonoBehaviour {
         int[] trackerArray = new int[originMesh.Vertices.Count];
 
         // 切断処理が行われるポリゴンが切断された後の、新規ポリゴン情報を格納する
-        SubdivideDataBuffer subdivideDataBuffer = new SubdivideDataBuffer();
+        SubdivideDataBuffer subdivideDataBuffer = new();
 
         // ローカル平面用
         Vector3 scale = targetTransform.localScale;
@@ -73,7 +58,7 @@ public class ActSubdivide5 : MonoBehaviour {
         Vector3 localPlaneNormal = Vector3.Scale(scale, targetTransform.InverseTransformDirection(cutter.normal)).normalized;
         Vector3 anchor = targetTransform.transform.InverseTransformPoint(pointOnPlane);
         float localPlaneDistance = Vector3.Dot(localPlaneNormal, anchor);
-        Plane localPlane = new Plane(localPlaneNormal, localPlaneDistance);
+        Plane localPlane = new(localPlaneNormal, localPlaneDistance);
 
 
         // ==== ここからデバッグ用コードを追加 ====

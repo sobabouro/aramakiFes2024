@@ -9,7 +9,7 @@ public class EquivalentNormalPolygonBuffer {
     /// <summary>
     /// 法線の向きが同じ連結ポリゴン情報を管理するための辞書
     /// </summary>
-    private Dictionary<int, LinkedPolygonList> _polygonDictionary = new Dictionary<int, LinkedPolygonList>();
+    private Dictionary<int, LinkedPolygonList> _polygonDictionary = new();
 
     
 
@@ -46,7 +46,7 @@ public class EquivalentNormalPolygonBuffer {
         MeshContainer originMesh,
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh,
-        CutSurfaceVertexBuffer cutSurfaceVertexBuffer
+        LinkedVertexList linkedVertexList
     ) {
         foreach (var pair in _polygonDictionary) {
             int normal = pair.Key;
@@ -58,7 +58,7 @@ public class EquivalentNormalPolygonBuffer {
                 originMesh,
                 frontsideMesh,
                 backsideMesh,
-                cutSurfaceVertexBuffer
+                linkedVertexList
             );
         }
     }

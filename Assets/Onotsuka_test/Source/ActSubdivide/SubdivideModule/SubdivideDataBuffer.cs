@@ -11,9 +11,9 @@ public class SubdivideDataBuffer {
     /// <summary>
     /// 法線方向ごとにポリゴンの情報を保持するバッファ
     /// </summary>
-    private EquivalentNormalPolygonBuffer _polygonBuffer = new EquivalentNormalPolygonBuffer();
+    private EquivalentNormalPolygonBuffer _polygonBuffer = new();
 
-    private CutSurfaceVertexBuffer _cutSurfaceVertexBuffer = new CutSurfaceVertexBuffer();
+    private LinkedVertexList _linkedVertexList = new();
 
     /// <summary>
     /// 新しいポリゴン情報を追加するメソッド
@@ -22,11 +22,11 @@ public class SubdivideDataBuffer {
     /// <param name="polygonNormal"> 追加するポリゴンの法線 </param>
     /// <param name="input"> 新情報生成用に整形されたデータ (SideIndexInfo) </param>
     public void AddData(int submeshGroupNumber, Vector3 polygonNormal, SideIndexInfo input) {
-        NewVertex toward = new NewVertex(
+        NewVertex toward = new(
             input.FrontAwayIndex,
             input.BackTowardIndex
         );
-        NewVertex away = new NewVertex(
+        NewVertex away = new(
             input.FrontTowardIndex,
             input.BackAwayIndex
         );
@@ -40,6 +40,12 @@ public class SubdivideDataBuffer {
     }
 
     public void MakePolygon(Plane localPlane, int[] trackerArray, MeshContainer originMesh, MeshContainer frontsideMesh, MeshContainer backsideMesh) {
-        _polygonBuffer.MakePolygon(localPlane, trackerArray, originMesh, frontsideMesh, backsideMesh, _cutSurfaceVertexBuffer);
+        _polygonBuffer.MakePolygon(localPlane, trackerArray, originMesh, frontsideMesh, backsideMesh, _linkedVertexList);
+
+        for (int i = 0; i < _linkedVertexList.Count; i++) {
+            Debug.Log($"Linked Vertex {i}: ");
+            var linkedVertex = _linkedVertexList[i];
+            linkedVertex.Display();
+        }
     }
 }

@@ -10,12 +10,12 @@ public class UnionFind {
     /// <summary>
     /// 各ノードツリーの根ノード (自分が親なら自分自身)
     /// </summary>
-    private Dictionary<int, int> _parent = new Dictionary<int, int>();
+    private Dictionary<int, int> _parent = new();
 
     /// <summary>
     /// 各ノードツリーのランク
     /// </summary>
-    private Dictionary<int, int> _rank = new Dictionary<int, int>();
+    private Dictionary<int, int> _rank = new();
 
 
     /// <summary>
@@ -83,7 +83,7 @@ public class UnionFind {
     /// </summary>
     /// <returns>すべてのノードツリーの辞書</returns>
     public Dictionary<int, List<int>> GetGroups() {
-        Dictionary<int, List<int>> groups = new Dictionary<int, List<int>>();
+        Dictionary<int, List<int>> groups = new();
         foreach (var key in _parent.Keys) {
             int root = Find(key);
             if (!groups.ContainsKey(root)) {

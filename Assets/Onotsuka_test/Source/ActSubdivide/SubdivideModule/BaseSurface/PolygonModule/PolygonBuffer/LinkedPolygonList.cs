@@ -26,7 +26,7 @@ public class LinkedPolygonList : AbstractNodeSequenceList<LinkedPolygon, NewPoly
             }
         }
         // どの連結ポリゴンにも追加できなかった場合は新しい連結ポリゴンを作成する
-        var newLinked = new LinkedPolygon();
+        LinkedPolygon newLinked = new();
         newLinked.TryAppend(polygon);
         _nodeSequenceList.Add(newLinked);
     }
@@ -58,7 +58,7 @@ public class LinkedPolygonList : AbstractNodeSequenceList<LinkedPolygon, NewPoly
         MeshContainer originMesh,
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh,
-        CutSurfaceVertexBuffer cutSurfaceVertexBuffer
+        LinkedVertexList linkedVertexList
     ) {
         foreach (var linkedPolygon in _nodeSequenceList) {
             if (linkedPolygon.First == null || linkedPolygon.Last == null)
@@ -69,7 +69,7 @@ public class LinkedPolygonList : AbstractNodeSequenceList<LinkedPolygon, NewPoly
                 originMesh,
                 frontsideMesh,
                 backsideMesh,
-                cutSurfaceVertexBuffer
+                linkedVertexList
             );
         }
     }

@@ -9,17 +9,17 @@ public class PathInspiredLinkedList : IPathFactory, IPathAcceser {
     /// <summary>
     /// start -> end の有向辺を追加する
     /// </summary>
-    private Dictionary<int, int> _next = new Dictionary<int, int>();
+    private Dictionary<int, int> _next = new();
 
     /// <summary>
     /// end -> start の有向辺を追加する
     /// </summary>
-    private Dictionary<int, int> _prev = new Dictionary<int, int>();
+    private Dictionary<int, int> _prev = new();
 
     /// <summary>
     /// ハッシュセットで、パスに含まれるノードを管理する
     /// </summary>
-    private HashSet<int> _nodes = new HashSet<int>();
+    private HashSet<int> _nodes = new();
 
     /// <summary>
     /// インスタンス生成メソッド
@@ -93,7 +93,7 @@ public class PathInspiredLinkedList : IPathFactory, IPathAcceser {
     /// </summary>
     /// <returns> 連結した有向辺のパスを表すノードIDのリスト </returns>
     public List<int> GetPath() {
-        List<int> path = new List<int>();
+        List<int> path = new();
         int currentNode = GetStartNode();
         while (_next.ContainsKey(currentNode)) {
             path.Add(currentNode);

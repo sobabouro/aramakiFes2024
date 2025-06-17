@@ -6,6 +6,17 @@ using UnityEngine;
 public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NewVertex> {
 
     /// <summary>
+    /// インデクサー
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
+    public LinkedVertex this[int index] {
+        get {
+            return _nodeSequenceList[index];
+        }
+    }
+
+    /// <summary>
     /// 連結辺シーケンスに頂点を追加するメソッド
     /// </summary>
     /// <param name="args"> (NewVertex 始点, NewVertex 終点) </param>
@@ -27,9 +38,8 @@ public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NewVertex
                 return;
             }
         }
-
         // どの連結辺にも追加できなかった場合は新しい連結辺を作成する
-        var newLinked = new LinkedVertex();
+        LinkedVertex newLinked = new();
         newLinked.TryAppend(toward, away);
         _nodeSequenceList.Add(newLinked);
     }
