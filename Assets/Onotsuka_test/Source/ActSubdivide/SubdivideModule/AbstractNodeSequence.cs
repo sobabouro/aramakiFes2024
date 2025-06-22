@@ -1,11 +1,15 @@
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
 /// 連結した要素の管理を行う抽象基底クラス
 /// </summary>
 /// <typeparam name="T"> ノードとして管理するオブジェクト </typeparam>
-public abstract class AbstractNodeSequence<T> : INodeSequenceMergeStrategy<T> 
+public abstract class AbstractNodeSequence<T>
     where T : class {
+
+    private INodeSequenceMergeStrategy<T> _mergeStrategy;
 
     /// <summary>
     /// 連結リストを保持する双方向リスト
@@ -26,7 +30,17 @@ public abstract class AbstractNodeSequence<T> : INodeSequenceMergeStrategy<T>
     /// <summary>
     /// 連結要素のシーケンスを取得するプロパティ
     /// </summary>
-    protected LinkedList<T> NodeSequence => _nodeSequence;
+    protected IEnumerable<T> GetItemsEnumerable() => _nodeSequence;
+
+    public INodeSequenceMergeStrategy<T> MergeStrategy {
+        get => _mergeStrategy;
+        set => _mergeStrategy = value
+            ?? throw new ArgumentNullException(nameof(value), "Merge strategy cannot be null.");
+    }
+
+    protected AbstractNodeSequence(INodeSequenceMergeStrategy<T> mergeStrategy) {
+        _mergeStrategy = mergeStrategy;
+    }
 
     /// <summary>
     /// 連結要素の後ろに要素を追加できるか試みる (抽象メソッド)
@@ -43,9 +57,11 @@ public abstract class AbstractNodeSequence<T> : INodeSequenceMergeStrategy<T>
     /// </summary>
     /// <param name="other">マージする他の要素</param>
     public void MergeAfter(AbstractNodeSequence<T> other) {
-        foreach (var otherItem in other._nodeSequence) {
-            _nodeSequence.AddLast(otherItem);
+        if (_mergeStrategy == null) {
+            throw new InvalidOperationException("Merge strategy is not set.");
         }
+        Debug.Log($"AbstractNodeSequence: call MergeAfter()");
+        _mergeStrategy.MergeAfterStrategy(_nodeSequence, other.GetItemsEnumerable(), other.First, other.Last);
     }
 
     /// <summary>
@@ -53,10 +69,10 @@ public abstract class AbstractNodeSequence<T> : INodeSequenceMergeStrategy<T>
     /// </summary>
     /// <param name="other">マージする他の要素</param>
     public void MergeBefore(AbstractNodeSequence<T> other) {
-        var node = other._nodeSequence.Last;
-        while (node != null) {
-            _nodeSequence.AddFirst(node.Value);
-            node = node.Previous;
+        if (_mergeStrategy == null) {
+            throw new InvalidOperationException("Merge strategy is not set.");
         }
+        Debug.Log($"AbstractNodeSequence: call MergeBefore()");
+        _mergeStrategy.MergeBeforeStrategy(_nodeSequence, other.GetItemsEnumerable(), other.First, other.Last);
     }
 }

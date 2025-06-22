@@ -1,9 +1,10 @@
+using System;
 using UnityEngine;
 
 /// <summary>
 /// 頂点情報を管理するためのクラス
 /// </summary>
-public class NewVertex{
+public class NewVertex : IEquatable<NewVertex>{
 
     /// <summary>
     /// 新頂点に隣接した、切断平面法線側の頂点のインデックスのプロパティ (切断前メッシュ頂点リストでのインデックス)
@@ -54,6 +55,22 @@ public class NewVertex{
         FrontsideVertexIndex = frontsideVertexIndex;
         BacksideVertexIndex = backsideVertexIndex;
         Domein = ((uint)frontsideVertexIndex << 16) | (uint)(backsideVertexIndex);
+    }
+
+    public bool Equals(NewVertex? other) {
+        if (other == null)
+            return false;
+        return Position == other.Position;
+    }
+
+    public override bool Equals(object? obj) {
+        if (obj is NewVertex other)
+            return Equals(other);
+        return false;
+    }
+
+    public override int GetHashCode() {
+        return Position.GetHashCode();
     }
 
     /// <summary>

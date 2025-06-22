@@ -1,11 +1,13 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// 連結ポリゴンの情報を保持するクラス
 /// 連結ポリゴンは切断辺の始点から終点の順を正方向として連結する
 /// </summary>
-public class LinkedVertex :AbstractNodeSequence<NewVertex> {
+public class LinkedVertex : AbstractNodeSequence<NewVertex> {
+
+    public LinkedVertex() : base(new DeleteDuplicateMergeStrategy<NewVertex>()) { }
+    public LinkedVertex(INodeSequenceMergeStrategy<NewVertex> mergeStrategy) : base(mergeStrategy) { }
 
     /// <summary>
     /// 対象の辺を連結辺に対して後ろに追加するメソッド
@@ -17,7 +19,8 @@ public class LinkedVertex :AbstractNodeSequence<NewVertex> {
             Debug.LogError("TryAppend for LinkedVertex requires two NewVertex arguments.");
             return false;
         }
-        if (_nodeSequence.Last?.Value.Position == toward.Position) {
+        var value = _nodeSequence.Last?.Value;
+        if (value != null && value.Equals(toward)) {
             _nodeSequence.AddLast(away);
 
             return true;
@@ -40,7 +43,8 @@ public class LinkedVertex :AbstractNodeSequence<NewVertex> {
             Debug.LogError("TryAppend for LinkedVertex requires two NewVertex arguments.");
             return false;
         }
-        if (_nodeSequence.First?.Value.Position == away.Position) {
+        var value = _nodeSequence.First?.Value;
+        if (value != null && value.Equals(away)) {
             _nodeSequence.AddFirst(toward);
 
             return true;

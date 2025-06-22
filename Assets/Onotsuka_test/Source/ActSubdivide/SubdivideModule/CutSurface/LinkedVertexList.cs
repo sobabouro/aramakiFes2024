@@ -21,6 +21,9 @@ public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NewVertex
     /// </summary>
     /// <param name="args"> (NewVertex 始点, NewVertex 終点) </param>
     public override void Add(params object[] args) {
+
+        Debug.Log($"LinkedVertexList: Add called with {args.Length} arguments.");
+
         if (args.Length != 2 || !(args[0] is NewVertex toward) || !(args[1] is NewVertex away)) {
             Debug.LogError("Add for LinkedVertexList requires two NewVertex arguments.");
             return;
@@ -54,6 +57,6 @@ public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NewVertex
     protected override bool CheckMerge(NewVertex target, NewVertex key, bool isAfter) {
         if (target == null)
             return false;
-        return target.Position == key.Position;
+        return target.Equals(key);
     }
 }

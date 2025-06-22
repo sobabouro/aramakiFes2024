@@ -7,6 +7,9 @@ using UnityEngine;
 /// </summary>
 public class LinkedPolygon : AbstractNodeSequence<NewPolygon> {
 
+    public LinkedPolygon() : base(new AllMergeStrategy<NewPolygon>()) { }
+    public LinkedPolygon(INodeSequenceMergeStrategy<NewPolygon> mergeStrategy) : base(mergeStrategy) { }
+
     /// <summary>
     /// 対象ポリゴンを連結ポリゴンに対して後ろに追加するメソッド
     /// </summary>
