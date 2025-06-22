@@ -13,7 +13,7 @@ public class SubdivideDataBuffer {
     /// </summary>
     private EquivalentNormalPolygonBuffer _polygonBuffer = new();
 
-    private LinkedVertexList _linkedVertexList = new();
+    private CutSurfacePolygonBuffer _cutSurfacePolygonBuffer = new();
 
     /// <summary>
     /// 新しいポリゴン情報を追加するメソッド
@@ -40,12 +40,6 @@ public class SubdivideDataBuffer {
     }
 
     public void MakePolygon(Plane localPlane, int[] trackerArray, MeshContainer originMesh, MeshContainer frontsideMesh, MeshContainer backsideMesh) {
-        _polygonBuffer.MakePolygon(localPlane, trackerArray, originMesh, frontsideMesh, backsideMesh, _linkedVertexList);
-
-        for (int i = 0; i < _linkedVertexList.Count; i++) {
-            Debug.Log($"Linked Vertex {i}: ");
-            var linkedVertex = _linkedVertexList[i];
-            linkedVertex.Display();
-        }
+        _polygonBuffer.MakePolygon(localPlane, trackerArray, originMesh, frontsideMesh, backsideMesh, _cutSurfacePolygonBuffer);
     }
 }

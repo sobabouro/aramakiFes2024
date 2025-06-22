@@ -75,4 +75,12 @@ public abstract class AbstractNodeSequence<T>
         Debug.Log($"AbstractNodeSequence: call MergeBefore()");
         _mergeStrategy.MergeBeforeStrategy(_nodeSequence, other.GetItemsEnumerable(), other.First, other.Last);
     }
+
+    /// <summary>
+    /// 連結要素のシーケンスから指定されたノードを削除するメソッド
+    /// </summary>
+    /// <param name="nodeToDelete"> 削除するノード </param>
+    public void RemoveNode(LinkedListNode<T> nodeToDelete) {
+        _nodeSequence.Remove(nodeToDelete);
+    }
 }

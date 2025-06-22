@@ -1,10 +1,9 @@
-using System;
 using UnityEngine;
 
 /// <summary>
 /// 頂点情報を管理するためのクラス
 /// </summary>
-public class NewVertex : IEquatable<NewVertex>{
+public class NewVertex {
 
     /// <summary>
     /// 新頂点に隣接した、切断平面法線側の頂点のインデックスのプロパティ (切断前メッシュ頂点リストでのインデックス)
@@ -23,27 +22,6 @@ public class NewVertex : IEquatable<NewVertex>{
     public readonly uint Domein;
 
     /// <summary>
-    /// 新頂点の法線側メッシュでのインデックスのプロパティ
-    /// </summary>
-    public int FrontNewIndex {
-        get; private set;
-    } = -1;
-
-    /// <summary>
-    /// 新頂点の反法線側メッシュでのインデックスのプロパティ
-    /// </summary>
-    public int BackNewIndex {
-        get; private set;
-    } = -1;
-
-    /// <summary>
-    /// 新頂点の座標のプロパティ
-    /// </summary>
-    public Vector3? Position {
-        get; private set;
-    } = null;
-
-    /// <summary>
     /// コンストラクタ
     /// </summary>
     /// <param name="frontsideVertexIndex"> 新頂点の切断平面法線側の頂点のインデックス (切断前メッシュ頂点リストでのインデックス) </param>
@@ -55,22 +33,6 @@ public class NewVertex : IEquatable<NewVertex>{
         FrontsideVertexIndex = frontsideVertexIndex;
         BacksideVertexIndex = backsideVertexIndex;
         Domein = ((uint)frontsideVertexIndex << 16) | (uint)(backsideVertexIndex);
-    }
-
-    public bool Equals(NewVertex? other) {
-        if (other == null)
-            return false;
-        return Position == other.Position;
-    }
-
-    public override bool Equals(object? obj) {
-        if (obj is NewVertex other)
-            return Equals(other);
-        return false;
-    }
-
-    public override int GetHashCode() {
-        return Position.GetHashCode();
     }
 
     /// <summary>
@@ -106,23 +68,5 @@ public class NewVertex : IEquatable<NewVertex>{
         );
 
         return (position, normal, uv);
-    }
-
-    /// <summary>
-    /// 新頂点のインデックスを設定するメソッド
-    /// </summary>
-    /// <param name="frontNewIndex"> 新頂点の法線側メッシュでの頂点配列インデックス </param>
-    /// <param name="backNewIndex"> 新頂点の反法線側メッシュでの頂点配列インデックス </param>
-    /// <param name="position"> 新頂点の座標 </param>
-    public void SetNewInfo(
-        int frontNewIndex,
-        int backNewIndex,
-        Vector3 position
-    ) {
-        if (frontNewIndex < -1 || backNewIndex < -1)
-            throw new System.Exception("NewVertex: Invalid index set. frontNewIndex: " + frontNewIndex + ", backNewIndex: " + backNewIndex + ".");
-        FrontNewIndex = frontNewIndex;
-        BackNewIndex = backNewIndex;
-        Position = position;
     }
 }

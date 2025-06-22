@@ -46,7 +46,7 @@ public class EquivalentNormalPolygonBuffer {
         MeshContainer originMesh,
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh,
-        LinkedVertexList linkedVertexList
+        CutSurfacePolygonBuffer cutSurfacePolygonBuffer
     ) {
         foreach (var pair in _polygonDictionary) {
             int normal = pair.Key;
@@ -58,7 +58,7 @@ public class EquivalentNormalPolygonBuffer {
                 originMesh,
                 frontsideMesh,
                 backsideMesh,
-                linkedVertexList
+                cutSurfacePolygonBuffer
             );
         }
     }

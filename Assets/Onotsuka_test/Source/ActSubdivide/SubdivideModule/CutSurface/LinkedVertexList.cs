@@ -3,7 +3,7 @@ using UnityEngine;
 /// <summary>
 /// 連結辺シーケンス (LinkedVertex) のリストを管理するクラス
 /// </summary>
-public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NewVertex> {
+public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, CutSurfaceVertex> {
 
     /// <summary>
     /// インデクサー
@@ -24,7 +24,7 @@ public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NewVertex
 
         Debug.Log($"LinkedVertexList: Add called with {args.Length} arguments.");
 
-        if (args.Length != 2 || !(args[0] is NewVertex toward) || !(args[1] is NewVertex away)) {
+        if (args.Length != 2 || !(args[0] is CutSurfaceVertex toward) || !(args[1] is CutSurfaceVertex away)) {
             Debug.LogError("Add for LinkedVertexList requires two NewVertex arguments.");
             return;
         }
@@ -54,7 +54,7 @@ public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NewVertex
     /// <param name="key"> Add() によって追加した新有向辺の対応する頂点 </param>
     /// <param name="isAfter"> 前後のどちらに対してマージを試みるかを示すフラグ </param>
     /// <returns></returns>
-    protected override bool CheckMerge(NewVertex target, NewVertex key, bool isAfter) {
+    protected override bool CheckMerge(CutSurfaceVertex target, CutSurfaceVertex key, bool isAfter) {
         if (target == null)
             return false;
         return target.Equals(key);

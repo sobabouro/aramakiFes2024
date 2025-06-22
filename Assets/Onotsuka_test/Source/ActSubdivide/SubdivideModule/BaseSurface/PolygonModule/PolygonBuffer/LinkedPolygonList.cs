@@ -58,7 +58,7 @@ public class LinkedPolygonList : AbstractNodeSequenceList<LinkedPolygon, NewPoly
         MeshContainer originMesh,
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh,
-        LinkedVertexList linkedVertexList
+        CutSurfacePolygonBuffer cutSurfacePolygonBuffer
     ) {
         foreach (var linkedPolygon in _nodeSequenceList) {
             if (linkedPolygon.First == null || linkedPolygon.Last == null)
@@ -69,7 +69,7 @@ public class LinkedPolygonList : AbstractNodeSequenceList<LinkedPolygon, NewPoly
                 originMesh,
                 frontsideMesh,
                 backsideMesh,
-                linkedVertexList
+                cutSurfacePolygonBuffer
             );
         }
     }

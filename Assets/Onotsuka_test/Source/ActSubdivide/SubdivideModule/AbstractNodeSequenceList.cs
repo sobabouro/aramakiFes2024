@@ -1,4 +1,4 @@
-using System;
+using System.Collections;
 using System.Collections.Generic;
 
 /// <summary>
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 /// </summary>
 /// <typeparam name="TNodeSequence"> シーケンスの型 </typeparam>
 /// <typeparam name="TItem"> シーケンスが管理するオブジェクトの型 </typeparam>
-public abstract class AbstractNodeSequenceList<TNodeSequence, TItem>
+public abstract class AbstractNodeSequenceList<TNodeSequence, TItem> : IEnumerable<TNodeSequence>
     where TNodeSequence : AbstractNodeSequence<TItem>, new()
     where TItem : class {
 
@@ -19,6 +19,22 @@ public abstract class AbstractNodeSequenceList<TNodeSequence, TItem>
     /// シーケンスのリストの要素数を取得するプロパティ
     /// </summary>
     public int Count => _nodeSequenceList.Count;
+
+    /// <summary>
+    /// シーケンスのリストを列挙するためのイテレータを返すメソッド
+    /// </summary>
+    /// <returns></returns>
+    public IEnumerator<TNodeSequence> GetEnumerator() {
+        return _nodeSequenceList.GetEnumerator();
+    }
+
+    /// <summary>
+    /// IEnumerable インターフェースの GetEnumerator メソッドの実装
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
 
     /// <summary>
     /// リストの各シーケンスに対して、新しい連結要素の追加判定を行い、適切なシーケンスに追加を行うメソッド
