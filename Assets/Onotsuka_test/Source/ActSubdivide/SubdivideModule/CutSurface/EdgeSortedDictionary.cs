@@ -2,17 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EdgeSortedDictionary : MonoBehaviour
-{
-    // Start is called before the first frame update
-    void Start()
-    {
+public class EdgeSortedDictionary<T>
+    where T : AbstractCutSurfaceVertex {
+    
+    private SortedDictionary<AbstractCutSurfaceVertex, Edge<T>> _edgeDictionary;
+
+    public EdgeSortedDictionary(float horizonY) {
         
     }
 
-    // Update is called once per frame
-    void Update()
-    {
+    public void AddEdge() {
+    }
+
+    public void RemoveEdge(Edge<T> edge) {
         
     }
+
+
 }
