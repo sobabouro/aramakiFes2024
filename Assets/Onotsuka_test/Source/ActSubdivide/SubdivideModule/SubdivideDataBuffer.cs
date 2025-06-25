@@ -39,7 +39,8 @@ public class SubdivideDataBuffer {
         _polygonBuffer.Add(polygonNormal, polygon);
     }
 
-    public void MakePolygon(Plane localPlane, int[] trackerArray, MeshContainer originMesh, MeshContainer frontsideMesh, MeshContainer backsideMesh) {
-        _polygonBuffer.MakePolygon(localPlane, trackerArray, originMesh, frontsideMesh, backsideMesh, _cutSurfacePolygonBuffer);
+    public void MakeAllPolygon(Plane localPlane, int[] trackerArray, MeshContainer originMesh, MeshContainer frontsideMesh, MeshContainer backsideMesh) {
+        _polygonBuffer.MakeBaseSurfacePolygon(localPlane, trackerArray, originMesh, frontsideMesh, backsideMesh, _cutSurfacePolygonBuffer);
+        _cutSurfacePolygonBuffer.MakeCutSurfacePolygon();
     }
 }

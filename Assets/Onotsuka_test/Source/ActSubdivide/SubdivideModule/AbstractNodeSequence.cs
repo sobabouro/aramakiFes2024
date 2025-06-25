@@ -28,7 +28,12 @@ public abstract class AbstractNodeSequence<T>
     public LinkedListNode<T>? Last => _nodeSequence.Last;
 
     /// <summary>
-    /// 連結要素のシーケンスを取得するプロパティ
+    /// 連結要素の数を取得するプロパティ
+    /// </summary>
+    public int Count => _nodeSequence.Count;
+
+    /// <summary>
+    /// 連結要素のシーケンスのコレクションを取得するプロパティ
     /// </summary>
     protected IEnumerable<T> GetItemsEnumerable() => _nodeSequence;
 

@@ -185,7 +185,7 @@ public class ActSubdivide5 : MonoBehaviour {
         }
 
         // 融解・蓄積した切断対象ポリゴン情報をもとに、MeshTopology.Triangles で再生成を行う
-        subdivideDataBuffer.MakePolygon(
+        subdivideDataBuffer.MakeAllPolygon(
             localPlane,
             trackerArray,
             originMesh,

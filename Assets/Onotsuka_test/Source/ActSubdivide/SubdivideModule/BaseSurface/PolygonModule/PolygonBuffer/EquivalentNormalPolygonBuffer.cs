@@ -40,7 +40,7 @@ public class EquivalentNormalPolygonBuffer {
     /// <param name="originMesh"> 切断前メッシュ (MeshContainer) </param>
     /// <param name="frontsideMesh"> 切断後法線側メッシュ (MeshContainer) </param>
     /// <param name="backsideMesh"> 切断後反法線側メッシュ (MeshContainer) </param>
-    public void MakePolygon(
+    public void MakeBaseSurfacePolygon(
         Plane localPlane,
         int[] trackerArray,
         MeshContainer originMesh,

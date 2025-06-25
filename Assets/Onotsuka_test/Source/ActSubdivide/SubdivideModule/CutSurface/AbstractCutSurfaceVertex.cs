@@ -1,12 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using System;
 using UnityEngine;
 
 /// <summary>
 /// 切断平面上の頂点に関する情報を保持するクラス
 /// </summary>
-public class CutSurfaceVertex : IEquatable<CutSurfaceVertex> {
+public abstract class AbstractCutSurfaceVertex : IEquatable<AbstractCutSurfaceVertex> {
 
     /// <summary>
     /// 頂点のローカル座標 (unity)
@@ -19,18 +17,25 @@ public class CutSurfaceVertex : IEquatable<CutSurfaceVertex> {
     public readonly Vector2 PlanePosition;
 
     /// <summary>
-    /// 頂点の種類
+    /// 法線側メッシュでの頂点インデックス (切断後メッシュ頂点リストでのインデックス)
     /// </summary>
-    public VertexType VertexType;
+    public int NewFrontsideVertexIndex {
+        get; private set;
+    }
 
-    public CutSurfaceVertex helper;
+    /// <summary>
+    /// 反法線側メッシュでの頂点インデックス (切断後メッシュ頂点リストでのインデックス)
+    /// </summary>
+    public int NewBacksideVertexIndex {
+        get; private set;
+    }
 
     /// <summary>
     /// 切断平面上の頂点情報を初期化するコンストラクタ
     /// </summary>
     /// <param name="localPlane"> 切断平面 (ローカル座標) </param>
     /// <param name="localPosition"> 頂点座標 </param>
-    public CutSurfaceVertex(Plane localPlane, Vector3 localPosition) {
+    public AbstractCutSurfaceVertex(Plane localPlane, Vector3 localPosition) {
         LocalPosition = localPosition;
 
         Vector3 axisX = Vector3.Cross(localPlane.normal, Vector3.up).normalized;
@@ -46,17 +51,21 @@ public class CutSurfaceVertex : IEquatable<CutSurfaceVertex> {
         );
     }
 
+    public void SetIndex(
+        int newFrontsideVertexIndex,
+        int newBucksideVertexIndex
+    ) {
+        NewFrontsideVertexIndex = newFrontsideVertexIndex;
+        NewBacksideVertexIndex = newBucksideVertexIndex;
+    }
+
     /// <summary>
     /// Equals メソッドのオーバーライド
     /// 内容比較
     /// </summary>
-    /// <param name="other"> CutSurfaceVertex 型オブジェクト </param>
+    /// <param name="other"> AbstractCutSurfaceVertex 型オブジェクト </param>
     /// <returns> 等しければ true, そうでなければ false </returns>
-    public bool Equals(CutSurfaceVertex? other) {
-        if (other == null)
-            return false;
-        return LocalPosition == other.LocalPosition;
-    }
+    public abstract bool Equals(AbstractCutSurfaceVertex? other);
 
     /// <summary>
     /// Equals メソッドのオーバーライド
@@ -65,7 +74,7 @@ public class CutSurfaceVertex : IEquatable<CutSurfaceVertex> {
     /// <param name="obj"> オブジェクト型 </param>
     /// <returns> 等しければ true, そうでなければ false </returns>
     public override bool Equals(object? obj) {
-        if (obj is CutSurfaceVertex other)
+        if (obj is AbstractCutSurfaceVertex other)
             return Equals(other);
         return false;
     }

@@ -23,23 +23,19 @@ public abstract class AbstractNodeSequenceList<TNodeSequence, TItem> : IEnumerab
     /// <summary>
     /// シーケンスのリストを列挙するためのイテレータを返すメソッド
     /// </summary>
-    /// <returns></returns>
-    public IEnumerator<TNodeSequence> GetEnumerator() {
-        return _nodeSequenceList.GetEnumerator();
-    }
+    /// <returns> シーケンスのリストを列挙するためのイテレータ </returns>
+    public IEnumerator<TNodeSequence> GetEnumerator() => _nodeSequenceList.GetEnumerator();
 
     /// <summary>
     /// IEnumerable インターフェースの GetEnumerator メソッドの実装
     /// </summary>
-    /// <returns></returns>
-    IEnumerator IEnumerable.GetEnumerator() {
-        return GetEnumerator();
-    }
+    /// <returns> シーケンスのリストを列挙するためのイテレータ </returns>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>
     /// リストの各シーケンスに対して、新しい連結要素の追加判定を行い、適切なシーケンスに追加を行うメソッド
     /// </summary>
-    /// <param name="args"></param>
+    /// <param name="args"> 追加する要素 </param>
     public abstract void Add(params object[] args);
 
     /// <summary>
