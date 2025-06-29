@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Jamarino.IntervalTree</id>
+    <version>1.2.2</version>
+    <authors>Jonathan A. Marino</authors>
+    <license type="file">LICENSE.md</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/jamarino/IntervalTree</projectUrl>
+    <description>Interval tree implementation focused on memory efficiency and performance. Similar to the RangeTree implementation, but uses as little as &lt;10% of the peak memory in comparison.</description>
+    <tags>light interval tree intervaltree rangetree</tags>
+    <repository type="git" url="https://github.com/jamarino/IntervalTree" commit="d2ee04e6788ae4b9f349fe18fe0e4fa7462258e0" />
+    <dependencies>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="System.Memory" version="4.5.3" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

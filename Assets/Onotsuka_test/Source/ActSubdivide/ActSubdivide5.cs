@@ -190,7 +190,8 @@ public class ActSubdivide5 : MonoBehaviour {
             trackerArray,
             originMesh,
             frontsideMesh,
-            backsideMesh
+            backsideMesh,
+            addCutSurfaceMaterial
         );
         // ここで、切断面に対する処理を行う
 

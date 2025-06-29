@@ -1,11 +1,17 @@
 using System;
+using UnityEngine;
 
 /// <summary>
-/// 辺に関する情報を保持する構造体
+/// 辺に関する情報を保持するクラス
 /// </summary>
 /// <typeparam name="T"> AbstractCutSurfaceVertex の継承型 </typeparam>
-public struct Edge<T> 
+public class Edge<T> : IEquatable<Edge<T>>
     where T : AbstractCutSurfaceVertex {
+
+    /// <summary>
+    /// 浮動小数点数の誤差吸収用
+    /// </summary>
+    protected const float Epsilon = 0.0001f;
 
     /// <summary>
     /// 辺の始点
@@ -28,12 +34,20 @@ public struct Edge<T>
     }
 
     /// <summary>
-    /// オーバーライドされた Equals メソッド
+    /// Equals メソッドのオーバーライド
+    /// インスタンスが同じ Edge<T> 型であり、始点と終点が同じかどうかを比較する
+    /// </summary>
+    /// <param name="obj"> object 型 </param>
+    /// <returns> 等しければ true, そうでなければ false </returns>
+    public override bool Equals(object? obj) => obj is Edge<T> other && Equals(other);
+
+    /// <summary>
+    /// Equals メソッドのオーバーライド
     /// 辺の始点と終点が同じかどうかを比較する
     /// </summary>
-    /// <param name="obj"> Edge<T> 型 </param>
+    /// <param name="other"> Edge<T> 型 </param>
     /// <returns> 等しければ true, そうでなければ false </returns>
-    public override bool Equals(object? obj) => obj is Edge<T> other && Start.Equals(other.Start) && End.Equals(other.End);
+    public bool Equals(Edge<T> other) => Start.Equals(other.Start) && End.Equals(other.End);
 
     /// <summary>
     /// GetHashCode メソッドのオーバーライド

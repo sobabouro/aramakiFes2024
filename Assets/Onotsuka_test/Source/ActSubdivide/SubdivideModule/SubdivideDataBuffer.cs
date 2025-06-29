@@ -21,7 +21,11 @@ public class SubdivideDataBuffer {
     /// <param name="submeshGroupNumber"> 所属しているサブメッシュのグループ番号 </param>
     /// <param name="polygonNormal"> 追加するポリゴンの法線 </param>
     /// <param name="input"> 新情報生成用に整形されたデータ (SideIndexInfo) </param>
-    public void AddData(int submeshGroupNumber, Vector3 polygonNormal, SideIndexInfo input) {
+    public void AddData(
+        int submeshGroupNumber, 
+        Vector3 polygonNormal, 
+        SideIndexInfo input
+    ) {
         NewVertex toward = new(
             input.FrontAwayIndex,
             input.BackTowardIndex
@@ -39,8 +43,15 @@ public class SubdivideDataBuffer {
         _polygonBuffer.Add(polygonNormal, polygon);
     }
 
-    public void MakeAllPolygon(Plane localPlane, int[] trackerArray, MeshContainer originMesh, MeshContainer frontsideMesh, MeshContainer backsideMesh) {
+    public void MakeAllPolygon(
+        Plane localPlane, 
+        int[] trackerArray, 
+        MeshContainer originMesh, 
+        MeshContainer frontsideMesh, 
+        MeshContainer backsideMesh,
+        bool addCutSurfaceMaterial = false
+    ) {
         _polygonBuffer.MakeBaseSurfacePolygon(localPlane, trackerArray, originMesh, frontsideMesh, backsideMesh, _cutSurfacePolygonBuffer);
-        _cutSurfacePolygonBuffer.MakeCutSurfacePolygon();
+        _cutSurfacePolygonBuffer.MakeCutSurfacePolygon(addCutSurfaceMaterial);
     }
 }

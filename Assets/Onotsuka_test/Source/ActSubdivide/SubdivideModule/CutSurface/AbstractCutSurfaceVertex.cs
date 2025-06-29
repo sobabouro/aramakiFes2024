@@ -85,6 +85,6 @@ public abstract class AbstractCutSurfaceVertex : IEquatable<AbstractCutSurfaceVe
     /// </summary>
     /// <returns> インスタンスの参照に基づいた数値 </returns>
     public override int GetHashCode() {
-        return LocalPosition.GetHashCode();
+        return PlanePosition.GetHashCode();
     }
 }

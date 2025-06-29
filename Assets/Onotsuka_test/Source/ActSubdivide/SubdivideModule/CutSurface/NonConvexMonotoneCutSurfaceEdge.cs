@@ -1,0 +1,45 @@
+using UnityEngine;
+
+public class NonConvexMonotoneCutSurfaceEdge : Edge<NonConvexMonotoneCutSurfaceVertex> {
+
+    /// <summary>
+    /// 辺の y 座標の最小値
+    /// </summary>
+    public float MinY => Mathf.Min(Start.PlanePosition.y, End.PlanePosition.y);
+
+    /// <summary>
+    /// 辺の y 座標の最大値
+    /// </summary>
+    public float MaxY => Mathf.Max(Start.PlanePosition.y, End.PlanePosition.y);
+
+    /// <summary>
+    /// ヘルパー頂点
+    /// </summary>
+    public NonConvexMonotoneCutSurfaceVertex Helper {
+        get; set;
+    }
+
+    public NonConvexMonotoneCutSurfaceEdge(
+        NonConvexMonotoneCutSurfaceVertex start, 
+        NonConvexMonotoneCutSurfaceVertex end
+    ) : base(start, end) {
+        Helper = default;
+    }
+
+    /// <summary>
+    /// 辺の y 座標に対する x 座標を取得するメソッド
+    /// 水平線が辺の y 範囲内に存在することが前提である
+    /// </summary>
+    /// <param name="y"> 水平線の y 座標 </param>
+    /// <returns> 辺上の水平線との交点の x 座標 </returns>
+    public float GetXPositionIntersectionWithHorizon(float y) {
+
+        if (Mathf.Abs(Start.PlanePosition.y - End.PlanePosition.y) < Epsilon) {
+            return Mathf.Min(Start.PlanePosition.x, End.PlanePosition.x);
+        }
+        return Start.PlanePosition.x +
+               (y - Start.PlanePosition.y) *
+               (End.PlanePosition.x - Start.PlanePosition.x) /
+               (End.PlanePosition.y - Start.PlanePosition.y);
+    }
+}

@@ -8,6 +8,8 @@ using UnityEngine;
 /// </summary>
 public class LinkedVertex : AbstractNodeSequence<NonConvexMonotoneCutSurfaceVertex> {
 
+    private bool _isFormatted = false;
+
     /// <summary>
     /// 連結辺シーケンスのコレクションを取得するプロパティ
     /// </summary>
@@ -68,11 +70,21 @@ public class LinkedVertex : AbstractNodeSequence<NonConvexMonotoneCutSurfaceVert
     }
 
     /// <summary>
+    /// シーケンスの最後の要素を削除するメソッド (始点と終点が重複しているため)
+    /// </summary>
+    public void Formatting() {
+        if (_isFormatted) {
+            return;
+        }
+        _nodeSequence.Remove(_nodeSequence.Last);
+        _isFormatted = true;
+    }
+
+    /// <summary>
     /// 連結辺シーケンスのリスト内のすべての新頂点たちに頂点種類のラベル付与を行う
     /// </summary>
     public void ClusteringVertexType() {
-        // シーケンスの最後の要素を削除する (始点と終点が重複しているため)
-        _nodeSequence.Remove(_nodeSequence.Last);
+        Formatting();
 
         var currentNode = _nodeSequence.First;
         while (currentNode != null) {
