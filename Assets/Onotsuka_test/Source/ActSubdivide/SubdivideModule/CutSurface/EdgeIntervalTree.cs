@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
-using Jamarino.IntervalTree;
+using System.Web.UI;
+using IntervalTree;
 using UnityEngine;
 
 /// <summary>
@@ -9,19 +10,37 @@ using UnityEngine;
 /// </summary>
 public class EdgeIntervalTree {
 
+    /// <summary>
+    /// 許容誤差
+    /// </summary>
     private const float Epsilon = 0.0001f;
 
     /// <summary>
     /// y 座標を基準にした区間木
     /// </summary>
-    private readonly IIntervalTree<float, NonConvexMonotoneCutSurfaceEdge> _tree = new LightIntervalTree<float, NonConvexMonotoneCutSurfaceEdge>();
+    /// <remarks>
+    /// 自己平衡な区間木を使用する
+    /// オリジナルクラスでは struct であることを Interval が要求するため，以下の辞書 (edgeMap) を使用する
+    /// </remarks>
+    private readonly IntervalTree<float> _tree = new IntervalTree<float>();
+
+    /// <summary>
+    /// 辺と y 座標の区間をマッピングするための辞書
+    /// </summary>
+    /// <remarks>
+    /// vvondra.IntervalTree では Value を持つ区間をサポートしていない (区間のみでノード管理している)
+    /// Interval<T> を毎回生成せず，参照型の edge をキーとして管理することで，RemoveEdge() の際の不要な探索と比較を回避する
+    /// </remarks>
+    private readonly Dictionary<NonConvexMonotoneCutSurfaceEdge, Interval<float>> _edgeMap = new Dictionary<NonConvexMonotoneCutSurfaceEdge, Interval<float>>();
 
     /// <summary>
     /// EdgeIntervalTree に辺を追加するメソッド
     /// </summary>
     /// <param name="edge"> 追加する辺 </param>
     public void AddEdge(NonConvexMonotoneCutSurfaceEdge edge) {
-        _tree.Add(edge.MinY, edge.MaxY, edge);
+        var interval = new Interval<float>(edge.MinY, edge.MaxY);
+        _tree.Add(interval);
+        _edgeMap[edge] = interval;
     }
 
     /// <summary>
@@ -29,7 +48,10 @@ public class EdgeIntervalTree {
     /// </summary>
     /// <param name="edge"> 削除する辺 </param>
     public void RemoveEdge(NonConvexMonotoneCutSurfaceEdge edge) {
-        _tree.Remove(edge);
+        if (_edgeMap.TryGetValue(edge, out var interval)) {
+            _tree.Remove(interval);
+            _edgeMap.Remove(edge);
+        }
     }
 
     /// <summary>
@@ -38,10 +60,17 @@ public class EdgeIntervalTree {
     /// <param name="y"> 水平線の y 座標 </param>
     /// <returns> y 座標の水平線が通過する辺のリスト </returns>
     public List<NonConvexMonotoneCutSurfaceEdge> GetEdgesPassThroughHorizon(float y) {
-        var edges = _tree.Query(y);
 
-        return edges
-            .Where(edge => (y > edge.MinY + Epsilon && y < edge.MaxY - Epsilon))
-            .ToList();
+        var result = new List<NonConvexMonotoneCutSurfaceEdge>();
+        var candidates = _tree.Search(y);
+
+        foreach (var pair in _edgeMap) {
+            var edge = pair.Key;
+            if (y > edge.MinY + Epsilon && y < edge.MaxY - Epsilon) {
+                result.Add(edge);
+            }
+        }
+
+        return result;
     }
 }

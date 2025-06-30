@@ -107,37 +107,41 @@ public class DiagonalEdgeGenerator {
     /// イベントポイント (頂点) の頂点種類によって処理を分岐する
     /// インベントポイントは，図形の頂点リストを y 座標でソートした順で処理される
     /// </summary>
-    /// <param name="eventCount"> 現在のイベントカウント </param>
-    /// <param name="vertex"> イベントポイント (頂点) </param>
+    /// <param name="linkedVertexList"> 連結辺シーケンスのリスト (リストの数だけ図形がある ※連結した辺 -> 図形を構成している) </param>
     private void ProcessSweepLineForMakeDiagonalEdge(LinkedVertexList linkedVertexList) {
 
         for (int i = 0; i < _indexBeforeSortY.Length; i++) {
 
-            var vertex = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2].Start;
+            var currVertex = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2].Start;
+            var currEdge = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2];
+            var prevEdge = _indexBeforeSortY[i].Item2 > 0
+                ? _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2 - 1]
+                : _edgeList[_indexBeforeSortY[i].Item1][_edgeList[_indexBeforeSortY[i].Item1].Count - 1];
+
             // 走査線の y 座標を設定する
-            EdgeComparer.HorizonY = vertex.PlanePosition.y;
+            EdgeComparer.HorizonY = currVertex.PlanePosition.y;
             // 走査対象の頂点に接続する辺を取得する
-            var activeEdges = _edgeIntervalTree.GetEdgesPassThroughHorizon(vertex.PlanePosition.y);
+            var activeEdges = _edgeIntervalTree.GetEdgesPassThroughHorizon(currVertex.PlanePosition.y);
 
             foreach (var edge in activeEdges) {
                 _sortedXPositionEdgeInTree.Add(edge, edge);
             }
 
-            switch (vertex.VertexType) {
+            switch (currVertex.VertexType) {
                 case VertexType.Regular:
-                    HandleRegularVertex(vertex, _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2]);
+                    HandleRegularVertex(currVertex, currEdge, prevEdge);
                     break;
                 case VertexType.Start:
-                    HandleStartVertex(vertex, _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2]);
+                    HandleStartVertex(currVertex, currEdge);
                     break;
                 case VertexType.Merge:
-                    HandleMergeVertex(vertex, _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2]);
+                    HandleMergeVertex(currVertex, prevEdge);
                     break;
                 case VertexType.Split:
-                    HandleSplitVertex(vertex, _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2]);
+                    HandleSplitVertex(currVertex, currEdge);
                     break;
                 case VertexType.End:
-                    HandleEndVertex(vertex, _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2]);
+                    HandleEndVertex(currVertex, prevEdge);
                     break;
             }
 
@@ -150,11 +154,13 @@ public class DiagonalEdgeGenerator {
     /// <summary>
     /// イベントポイントが通常点 (Regular) の場合の処理メソッド
     /// </summary>
-    /// <param name="eventCount"></param>
-    /// <param name="vertex"></param>
+    /// <param name="currVertex"> v[i] </param>
+    /// <param name="currEdge"> e[i] </param>
+    /// <param name="prevEdge"> e[i-1] </param>
     private void HandleRegularVertex(
-        NonConvexMonotoneCutSurfaceVertex vertex,
-        NonConvexMonotoneCutSurfaceEdge edge
+        NonConvexMonotoneCutSurfaceVertex currVertex,
+        NonConvexMonotoneCutSurfaceEdge currEdge,
+        NonConvexMonotoneCutSurfaceEdge prevEdge
     ) {
         /** 
          * if P の内部が v[i] の右にある
@@ -167,21 +173,47 @@ public class DiagonalEdgeGenerator {
          * - - - then v[i] と helper(e[j]) を結ぶ対角線を D に挿入する
          * - - helper(e[j]) を v[i] にする
          */
-
+        if (currEdge.Start.LocalPosition.y < currEdge.End.LocalPosition.y)
+            return;
+        if (prevEdge.Helper.VertexType == VertexType.Merge) {
+            DiagonalSet.Add((currVertex, prevEdge.Helper));
+            _edgeIntervalTree.RemoveEdge(prevEdge);
+            _edgeIntervalTree.AddEdge(currEdge);
+            currEdge.Helper = currVertex;
+        } 
+        else {
+            var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
+            if (mostLeftNeighboringEdge.Helper.VertexType == VertexType.Merge) {
+                AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
+            }
+            mostLeftNeighboringEdge.Helper = currVertex;
+        }
     }
 
+    /// <summary>
+    /// イベントポイントが開始点 (Start) の場合の処理メソッド
+    /// </summary>
+    /// <param name="currVertex"> v[i] </param>
+    /// <param name="currEdge"> e[i] </param>
     private void HandleStartVertex(
-        NonConvexMonotoneCutSurfaceVertex vertex,
-        NonConvexMonotoneCutSurfaceEdge edge
+        NonConvexMonotoneCutSurfaceVertex currVertex,
+        NonConvexMonotoneCutSurfaceEdge currEdge
     ) {
         /**
          * e[i] を T に挿入し，helper(e[i]) を v[i] とする
          */
+        _edgeIntervalTree.AddEdge(currEdge);
+        currEdge.Helper = currVertex;
     }
 
+    /// <summary>
+    /// イベントポイントが統合点 (Merge) の場合の処理メソッド
+    /// </summary>
+    /// <param name="currVertex"> v[i] </param>
+    /// <param name="prevEdge"> e[i-1] </param>
     private void HandleMergeVertex(
-        NonConvexMonotoneCutSurfaceVertex vertex,
-        NonConvexMonotoneCutSurfaceEdge edge
+        NonConvexMonotoneCutSurfaceVertex currVertex,
+        NonConvexMonotoneCutSurfaceEdge prevEdge
     ) {
         /**
          * if helper(e[i-1]) が統合点である
@@ -192,11 +224,25 @@ public class DiagonalEdgeGenerator {
          * - then v[i] と helper(e[j]) を結ぶ対角線を D に挿入する
          * helper(e[j]) を v[i] にする
          */
+        if (prevEdge.Helper.VertexType == VertexType.Merge) {
+            AddDiagonalEdge(currVertex, prevEdge.Helper);
+        }
+        _edgeIntervalTree.RemoveEdge(prevEdge);
+        var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
+        if (mostLeftNeighboringEdge.Helper.VertexType == VertexType.Merge) {
+            AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
+        }
+        mostLeftNeighboringEdge.Helper = currVertex;
     }
 
+    /// <summary>
+    /// イベントポイントが分離点 (Split) の場合の処理メソッド
+    /// </summary>
+    /// <param name="currVertex"> v[i] </param>
+    /// <param name="currEdge"> e[i] </param>
     private void HandleSplitVertex(
-        NonConvexMonotoneCutSurfaceVertex vertex,
-        NonConvexMonotoneCutSurfaceEdge edge
+        NonConvexMonotoneCutSurfaceVertex currVertex,
+        NonConvexMonotoneCutSurfaceEdge currEdge
     ) {
         /**
          * T の中を探索して，v[i] のすぐ左にある辺 e[j] を求める
@@ -204,19 +250,38 @@ public class DiagonalEdgeGenerator {
          * helper(e[j]) を v[i] にする
          * e[i] を T に挿入し，helper(e[i]) を v[i] とする
          */
+        var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
+        AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
+        mostLeftNeighboringEdge.Helper = currVertex;
+        _edgeIntervalTree.AddEdge(currEdge);
+        currEdge.Helper = currVertex;
     }
 
+    /// <summary>
+    /// イベントポイントが終了点 (End) の場合の処理メソッド
+    /// </summary>
+    /// <param name="currVertex"> v[i] </param>
+    /// <param name="prevEdge"> e[i-1] </param>
     private void HandleEndVertex(
-        NonConvexMonotoneCutSurfaceVertex vertex,
-        NonConvexMonotoneCutSurfaceEdge edge
+        NonConvexMonotoneCutSurfaceVertex currVertex,
+        NonConvexMonotoneCutSurfaceEdge prevEdge
     ) {
         /**
          * if helper(e[i-1]) が統合点である
          * - then v[i] と helper(e[i-1]) を結ぶ対角線を D に挿入する
          * e[i-1] を T から削除する
          */
+        if (prevEdge.Helper.VertexType == VertexType.Merge) {
+            AddDiagonalEdge(currVertex, prevEdge.Helper);
+        }
+        _edgeIntervalTree.RemoveEdge(prevEdge);
     }
 
+    /// <summary>
+    /// 対角線を追加するメソッド
+    /// </summary>
+    /// <param name="startVertex"> 辺の始点 </param>
+    /// <param name="endVertex"> 辺の終点 </param>
     private void AddDiagonalEdge(
         NonConvexMonotoneCutSurfaceVertex startVertex,
         NonConvexMonotoneCutSurfaceVertex endVertex
