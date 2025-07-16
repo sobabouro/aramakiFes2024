@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using CalculationUtils;
 
 /// <summary>
 /// 連結辺の情報を保持するクラス
 /// 連結辺は切断辺の始点から終点の順を正方向として連結する
 /// </summary>
 public class LinkedVertex : AbstractNodeSequence<NonConvexMonotoneCutSurfaceVertex> {
-
-    private bool _isFormatted = false;
 
     /// <summary>
     /// 連結辺シーケンスのコレクションを取得するプロパティ
@@ -70,21 +69,9 @@ public class LinkedVertex : AbstractNodeSequence<NonConvexMonotoneCutSurfaceVert
     }
 
     /// <summary>
-    /// シーケンスの最後の要素を削除するメソッド (始点と終点が重複しているため)
-    /// </summary>
-    public void Formatting() {
-        if (_isFormatted) {
-            return;
-        }
-        _nodeSequence.Remove(_nodeSequence.Last);
-        _isFormatted = true;
-    }
-
-    /// <summary>
     /// 連結辺シーケンスのリスト内のすべての新頂点たちに頂点種類のラベル付与を行う
     /// </summary>
     public void ClusteringVertexType() {
-        Formatting();
 
         var currentNode = _nodeSequence.First;
         while (currentNode != null) {
@@ -109,41 +96,23 @@ public class LinkedVertex : AbstractNodeSequence<NonConvexMonotoneCutSurfaceVert
         float currY = currVertex.PlanePosition.y;
         float nextY = nextVertex.PlanePosition.y;
 
+        //Debug.Log($"LinkedVertex: prev - {{{prevVertex.PlanePosition.x}, {prevVertex.PlanePosition.y}}}, " +
+        //          $"curr - {{{currVertex.PlanePosition.x}, {currVertex.PlanePosition.y}}}, " +
+        //          $"next - {{{nextVertex.PlanePosition.x}, {nextVertex.PlanePosition.y}}}");
+
         if (currY > prevY && currY >= nextY) {
-            currVertex.VertexType = IsAcuteOrObtuseAngle(prevVertex, currVertex, nextVertex)
-                ? VertexType.Start
-                : VertexType.Split;
+            currVertex.VertexType = Calculation.IsClockwise(prevVertex.PlanePosition, currVertex.PlanePosition, nextVertex.PlanePosition)
+                ? VertexType.Split
+                : VertexType.Start;
         } else if (currY < prevY && currY <= nextY) {
-            currVertex.VertexType = IsAcuteOrObtuseAngle(prevVertex, currVertex, nextVertex)
-                ? VertexType.End
-                : VertexType.Merge;
+            currVertex.VertexType = Calculation.IsClockwise(prevVertex.PlanePosition, currVertex.PlanePosition, nextVertex.PlanePosition)
+                ? VertexType.Merge
+                : VertexType.End;
         } else {
             currVertex.VertexType = VertexType.Regular;
         }
-    }
 
-    /// <summary>
-    /// 対象の頂点 2 (current) を中心とした，二辺の成す角が鋭角か鈍角かを判定するメソッド
-    /// </summary>
-    /// <param name="prevVertex"> 連続する頂点 1 </param>
-    /// <param name="currVertex"> 連続する頂点 2 </param>
-    /// <param name="nextVertex"> 連続する頂点 3 </param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"> 連続する三頂点が平行の時 </exception>
-    private bool IsAcuteOrObtuseAngle(NonConvexMonotoneCutSurfaceVertex prevVertex, NonConvexMonotoneCutSurfaceVertex currVertex, NonConvexMonotoneCutSurfaceVertex nextVertex) {
-        Vector2 v1 = (prevVertex.PlanePosition - currVertex.PlanePosition).normalized;
-        Vector2 v2 = (prevVertex.PlanePosition - currVertex.PlanePosition).normalized;
-
-        float dot = Vector2.Dot(v1, v2);
-
-        // 鋭角
-        if (dot > 0)
-            return true;
-        // 鈍角
-        if (dot < 0)
-            return false;
-        // 平行の場合は例外を投げる
-        throw new InvalidOperationException("The angle is exactly 90 degrees.");
+        //Debug.Log($"LinkedVertex: VertexType is [{currVertex.VertexType}]");
     }
 
     public void Display() {

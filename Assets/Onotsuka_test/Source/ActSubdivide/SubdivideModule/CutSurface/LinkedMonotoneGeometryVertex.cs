@@ -1,0 +1,389 @@
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using CalculationUtils;
+
+public class LinkedMonotoneGeometryVertex : AbstractNodeSequence<NonConvexMonotoneCutSurfaceVertex> {
+
+    /// <summary>
+    /// 連結図形辺シーケンスの中で最も高い頂点のノード
+    /// </summary>
+    private LinkedListNode<NonConvexMonotoneCutSurfaceVertex> _mostHighestNode = null;
+
+    /// <summary>
+    /// 連結図形辺シーケンスの中で最も低い頂点のノード
+    /// </summary>
+    private LinkedListNode<NonConvexMonotoneCutSurfaceVertex> _mostLowestNode = null;
+
+    /// <summary>
+    /// 連結図形辺シーケンスの中で最も高い頂点の Y 座標
+    /// </summary>
+    private float _mostHighestYPosition = float.MinValue;
+
+    /// <summary>
+    /// 連結図形辺シーケンスの中で最も低い頂点の Y 座標
+    /// </summary>
+    private float _mostLowestYPosition = float.MaxValue;
+
+    /// <summary>
+    /// 連結辺シーケンスのコレクションを取得するプロパティ
+    /// </summary>
+    public IEnumerable<NonConvexMonotoneCutSurfaceVertex> Vertices => GetItemsEnumerable();
+
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    public LinkedMonotoneGeometryVertex() : base(new DeleteDuplicateMergeStrategy<NonConvexMonotoneCutSurfaceVertex>()) { }
+
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    /// <param name="mergeStrategy"> マージメソッド戦略 </param>
+    public LinkedMonotoneGeometryVertex(INodeSequenceMergeStrategy<NonConvexMonotoneCutSurfaceVertex> mergeStrategy) : base(mergeStrategy) { }
+
+    /// <summary>
+    /// 循環ノードのように各ノードにアクセスするためのメソッド
+    /// 次のノードを取得するメソッド
+    /// </summary>
+    /// <param name="node"> 対象ノード </param>
+    /// <returns> 対象ノードの次のノード </returns>
+    public LinkedListNode<NonConvexMonotoneCutSurfaceVertex> TorusNext(LinkedListNode<NonConvexMonotoneCutSurfaceVertex> node) {
+
+        if (node == null || _nodeSequence.Count == 0)
+            return null;
+
+        return node.Next ?? _nodeSequence.First;
+    }
+
+    /// <summary>
+    /// 循環ノードのように各ノードにアクセスするためのメソッド
+    /// 前のノードを取得するメソッド
+    /// </summary>
+    /// <param name="node"> 対象ノード </param>
+    /// <returns> 対象ノードの前のノード </returns>
+    public LinkedListNode<NonConvexMonotoneCutSurfaceVertex> TorusPrevious(LinkedListNode<NonConvexMonotoneCutSurfaceVertex> node) {
+
+        if (node == null || _nodeSequence.Count == 0)
+            return null;
+
+        return node.Previous ?? _nodeSequence.Last;
+    }
+
+    /// <summary>
+    /// 対象の辺を連結辺に対して後ろに追加するメソッド
+    /// </summary>
+    /// <param name="args"> (NonConvexMonotoneCutSurfaceVertex 始点, NonConvexMonotoneCutSurfaceVertex 終点) の引数 </param>
+    /// <returns> 追加に成功した場合は true, 失敗した場合は false </returns>
+    public override bool TryAppend(params object[] args) {
+        if (args.Length != 2 || !(args[0] is NonConvexMonotoneCutSurfaceVertex toward) || !(args[1] is NonConvexMonotoneCutSurfaceVertex away)) {
+            Debug.LogError("TryAppend for LinkedMonotoneGeometryVertex requires two NonConvexMonotoneCutSurfaceVertex arguments.");
+            return false;
+        }
+        var value = _nodeSequence.Last?.Value;
+        if (value != null && value.Equals(toward)) {
+            _nodeSequence.AddLast(away);
+
+            if (away.PlanePosition.y >= _mostHighestYPosition) {
+                if (away.PlanePosition.y == _mostHighestYPosition && away.PlanePosition.x < _mostHighestNode.Value.PlanePosition.x) {
+                    _mostHighestNode = _nodeSequence.Last;
+                }
+                _mostHighestYPosition = away.PlanePosition.y;
+                _mostHighestNode = _nodeSequence.Last;
+            }
+            if (away.PlanePosition.y <= _mostLowestYPosition) {
+                if (away.PlanePosition.y == _mostLowestYPosition && away.PlanePosition.x > _mostLowestNode.Value.PlanePosition.x) {
+                    _mostLowestNode = _nodeSequence.Last;
+                }
+                _mostLowestYPosition = away.PlanePosition.y;
+                _mostLowestNode = _nodeSequence.Last;
+            }
+
+            return true;
+        }
+        if (First == null) {
+            _nodeSequence.AddFirst(toward);
+            _nodeSequence.AddLast(away);
+
+            if (toward.PlanePosition.y > away.PlanePosition.y) {
+                _mostHighestYPosition = toward.PlanePosition.y;
+                _mostHighestNode = _nodeSequence.First;
+
+                _mostLowestYPosition = away.PlanePosition.y;
+                _mostLowestNode = _nodeSequence.Last;
+            } else if (toward.PlanePosition.y < away.PlanePosition.y) {
+                _mostHighestYPosition = away.PlanePosition.y;
+                _mostHighestNode = _nodeSequence.Last;
+
+                _mostLowestYPosition = toward.PlanePosition.y;
+                _mostLowestNode = _nodeSequence.First;
+            } 
+            else {
+                if (toward.PlanePosition.x < away.PlanePosition.x) {
+                    _mostHighestYPosition = toward.PlanePosition.y;
+                    _mostHighestNode = _nodeSequence.First;
+                    _mostLowestYPosition = away.PlanePosition.y;
+                    _mostLowestNode = _nodeSequence.Last;
+                } else {
+                    _mostHighestYPosition = away.PlanePosition.y;
+                    _mostHighestNode = _nodeSequence.Last;
+                    _mostLowestYPosition = toward.PlanePosition.y;
+                    _mostLowestNode = _nodeSequence.First;
+                }
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 対象の辺を連結辺に対して前に追加するメソッド
+    /// </summary>
+    /// <param name="args"> (NewVertex 始点, NewVertex 終点) の引数 </param>
+    /// <returns> 追加に成功した場合は true, 失敗した場合は false </returns>
+    public override bool TryPrepend(params object[] args) {
+        if (args.Length != 2 || !(args[0] is NonConvexMonotoneCutSurfaceVertex toward) || !(args[1] is NonConvexMonotoneCutSurfaceVertex away)) {
+            Debug.LogError("TryAppend for LinkedMonotoneGeometryVertex requires two NonConvexMonotoneCutSurfaceVertex arguments.");
+            return false;
+        }
+        var value = _nodeSequence.First?.Value;
+        if (value != null && value.Equals(away)) {
+            _nodeSequence.AddFirst(toward);
+
+            if (toward.PlanePosition.y >= _mostHighestYPosition) {
+                if (toward.PlanePosition.y == _mostHighestYPosition && toward.PlanePosition.x < _mostHighestNode.Value.PlanePosition.x) {
+                    _mostHighestNode = _nodeSequence.First;
+                }
+                _mostHighestYPosition = toward.PlanePosition.y;
+                _mostHighestNode = _nodeSequence.First;
+            }
+            if (toward.PlanePosition.y <= _mostLowestYPosition) {
+                if (toward.PlanePosition.y == _mostLowestYPosition && toward.PlanePosition.x > _mostLowestNode.Value.PlanePosition.x) {
+                    _mostLowestNode = _nodeSequence.First;
+                }
+                _mostLowestYPosition = toward.PlanePosition.y;
+                _mostLowestNode = _nodeSequence.First;
+            }
+
+            return true;
+        }
+        return false;
+    }
+
+    public void MakePolygon(
+        BoundingBox boundingBox,
+        Plane localPlane,
+        MeshContainer frontsideMesh,
+        MeshContainer backsideMesh,
+        bool addCutSurfaceMaterial = false
+    ) {
+        /**
+         * # 図形の中で最も y 座標が高い頂点から最も低い頂点まで辿る際の，右側境界の辺群と左側境界の辺群にそれぞれどちらの群 (チェイン) に属するかを設定する 
+         * # その後，すべての頂点を y 座標の降順にソートし，スタック (S) を用意し，左側の辺群と右側の辺群を統一した順序 (u[1], u[2], ..., u[n]) で以下の処理を行う
+         * 
+         * u[1], u[2] をスタックにプッシュする
+         * for i <- 3 to n-1
+         * - do if u[i] と S の一番上の頂点が異なるチェイン上にある
+         * - - then S からすべての頂点をポップする
+         * - - - u[i] とポップされたそれぞれの頂点を結ぶ対角線を D に挿入する．ただし，最後の頂点だけは除く
+         * - - - u[i-1] と u[i] を S にプッシュする
+         * - - else S から一つの頂点をポップする
+         * - - - u[i] からの対角線が P の内部にある限り，S から他の頂点をポップする
+         * - - - これらの対角線を D に挿入する
+         * - - - ポップされた最後の頂点をスタックに戻す
+         * - - - u[i] を S にプッシュする
+         * 最初と最後の頂点を覗いて，u[n] からスタック上のすべての頂点への対角線を加える
+         * 
+         * 
+         * ※ 以下実装では，対角線をリストに追加するのではなく，ポリゴンを直接生成する
+         */
+        ClusteringSideType();
+        NonConvexMonotoneCutSurfaceVertex[] sortedArray = SortVertexYPosition();
+        Stack<NonConvexMonotoneCutSurfaceVertex> stack = new ();
+
+        stack.Push(sortedArray[0]);
+        stack.Push(sortedArray[1]);
+
+        for (int i = 2; i < sortedArray.Length; i++) {
+
+            if (stack.Peek().SideType != sortedArray[i].SideType) {
+                while (stack.Count > 0) {
+
+                    var point1 = stack.Pop();
+                    var point2 = stack.Count > 0 ? stack.Pop() : stack.Peek();
+
+                    CreateTriangle(
+                        (point1, point2, sortedArray[i]),
+                        boundingBox,
+                        localPlane,
+                        frontsideMesh,
+                        backsideMesh,
+                        addCutSurfaceMaterial
+                    );
+                }
+                stack.Push(sortedArray[i - 1]);
+                stack.Push(sortedArray[i]);
+            } 
+            else {
+                bool isContinue = true;
+
+                while (stack.Count > 0 && isContinue) {
+                    isContinue = false;
+
+                    var point1 = stack.Pop();
+                    var point2 = stack.Count > 0 ? stack.Peek() : stack.Pop();
+
+                    // 左側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に時計回りに並ぶ場合) 
+                    if (sortedArray[i].SideType == SideType.Left && Calculation.IsClockwise(sortedArray[i].PlanePosition, point2.PlanePosition, point1.PlanePosition)) {
+                        CreateTriangle(
+                            (sortedArray[i], point2, point1),
+                            boundingBox,
+                            localPlane,
+                            frontsideMesh,
+                            backsideMesh,
+                            addCutSurfaceMaterial
+                        );
+                        if (stack.Count == 0)
+                            stack.Push(point2);
+                        stack.Push(sortedArray[i]);
+
+                        isContinue = true;
+                    }
+                    // 右側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に時計回りに並ぶ場合)
+                    else if (sortedArray[i].SideType == SideType.Right && Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
+                        CreateTriangle(
+                            (point1, sortedArray[i], point2),
+                            boundingBox,
+                            localPlane,
+                            frontsideMesh,
+                            backsideMesh,
+                            addCutSurfaceMaterial
+                        );
+                        if (stack.Count == 0)
+                            stack.Push(point2);
+                        stack.Push(sortedArray[i]);
+
+                        isContinue = true;
+                    } 
+                    // 図形内部に対角線が引けない場合 (辺が反っていて，辺を弓とすると対角線が弦となる形で図形の外部に結ばれてしまう)
+                    else {
+                        if (stack.Count == 0)
+                            stack.Push(point2);
+                        stack.Push(point1);
+                        stack.Push(sortedArray[i]);
+                    }
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// 連結図形辺シーケンスの各頂点に対して，その頂点が属する図形の y 最大地点と最小地点までを結ぶ二つの境界のうち，どちら側に位置するかを設定するメソッド
+    /// </summary>
+    private void ClusteringSideType() {
+
+        Debug.Log($"LinkedMonotoneGeometryVertex: most highest is {_mostHighestNode.Value.PlanePosition}");
+        Debug.Log($"LinkedMonotoneGeometryVertex: most lowest is {_mostLowestNode.Value.PlanePosition}");
+
+        var currentNode = _mostHighestNode;
+        currentNode.Value.SideType = SideType.Top;
+
+        Debug.Log($"LinkedMonotoneGeometryVertex: Most Highest Node - {currentNode.Value.PlanePosition}, SideType: {currentNode.Value.SideType}");
+
+        currentNode = TorusNext(currentNode);
+
+        while (currentNode != _mostLowestNode) {
+            currentNode.Value.SideType = SideType.Left;
+
+            Debug.Log($"LinkedMonotoneGeometryVertex: Current Node - {currentNode.Value.PlanePosition}, SideType: {currentNode.Value.SideType}");
+
+            currentNode = TorusNext(currentNode);
+        }
+        currentNode.Value.SideType = SideType.Bottom;
+
+        Debug.Log($"LinkedMonotoneGeometryVertex: Most Lowest Node - {currentNode.Value.PlanePosition}, SideType: {currentNode.Value.SideType}");
+
+        currentNode = TorusNext(currentNode);
+
+        while (currentNode != _mostHighestNode) {
+            currentNode.Value.SideType = SideType.Right;
+
+            Debug.Log($"LinkedMonotoneGeometryVertex: Current Node - {currentNode.Value.PlanePosition}, SideType: {currentNode.Value.SideType}");
+
+            currentNode = TorusNext(currentNode);
+        }
+    }
+
+    /// <summary>
+    /// 連結図形辺シーケンスの頂点を Y 座標の降順にソートするメソッド
+    /// </summary>
+    /// <returns> ソートされた頂点配列 </returns>
+    private NonConvexMonotoneCutSurfaceVertex[] SortVertexYPosition() {
+
+        NonConvexMonotoneCutSurfaceVertex[] sortedArray = _nodeSequence
+            .OrderByDescending(vertex => vertex.PlanePosition.y)
+            .ToArray();
+
+        return sortedArray;
+    }
+
+    /// <summary>
+    /// 三角形を生成するメソッド
+    /// </summary>
+    /// <param name="triangle"> 三角形を構成する三頂点 </param>
+    /// <param name="boundingBox"> UV 座標決定のための外枠 </param>
+    /// <param name="localPlane"> 切断平面 </param>
+    /// <param name="frontsideMesh"> 法線側メッシュ </param>
+    /// <param name="backsideMesh"> 反法線側メッシュ </param>
+    /// <param name="addCutSurfaceMaterial"></param>
+    private void CreateTriangle(
+        (NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex) triangle,
+        BoundingBox boundingBox,
+        Plane localPlane,
+        MeshContainer frontsideMesh,
+        MeshContainer backsideMesh,
+        bool addCutSurfaceMaterial = false
+    ) {
+        Vector3 triangleNormal = Vector3.Cross(
+            triangle.Item2.LocalPosition - triangle.Item1.LocalPosition,
+            triangle.Item3.LocalPosition - triangle.Item1.LocalPosition
+        ).normalized;
+
+        Vector3 vertex1 = triangle.Item1.LocalPosition;
+        Vector3 vertex2 = triangle.Item2.LocalPosition;
+        Vector3 vertex3 = triangle.Item3.LocalPosition;
+
+        Vector2 uv1 = new(
+            triangle.Item1.PlanePosition.x - boundingBox.MinX / boundingBox.Width,
+            triangle.Item1.PlanePosition.y - boundingBox.MinY / boundingBox.Height
+        );
+        Vector2 uv2 = new(
+            triangle.Item2.PlanePosition.x - boundingBox.MinX / boundingBox.Width,
+            triangle.Item2.PlanePosition.y - boundingBox.MinY / boundingBox.Height
+        );
+        Vector2 uv3 = new(
+            triangle.Item3.PlanePosition.x - boundingBox.MinX / boundingBox.Width,
+            triangle.Item3.PlanePosition.y - boundingBox.MinY / boundingBox.Height
+        );
+
+        int materialIndex = 0;
+
+        if (addCutSurfaceMaterial)
+            materialIndex = frontsideMesh.SubmeshCount;
+
+        frontsideMesh.AddMesh(
+            materialIndex,
+            triangleNormal,
+            new Vector3[] { vertex1, vertex2, vertex3 },
+            new Vector3[] { localPlane.normal, localPlane.normal, localPlane.normal },
+            new Vector2[] { uv1, uv2, uv3 }
+        );
+        backsideMesh.AddMesh(
+            materialIndex,
+            triangleNormal,
+            new Vector3[] { vertex1, vertex3, vertex2 },
+            new Vector3[] { -localPlane.normal, -localPlane.normal, -localPlane.normal },
+            new Vector2[] { uv1, uv3, uv2 }
+        );
+    }
+}

@@ -38,6 +38,9 @@ public class EdgeIntervalTree {
     /// </summary>
     /// <param name="edge"> 追加する辺 </param>
     public void AddEdge(NonConvexMonotoneCutSurfaceEdge edge) {
+
+        //Debug.Log($"EdgeIntervalTree: AddEdge - {edge.Start.VertexType} -> {edge.End.VertexType}, MinY: {edge.MinY}, MaxY: {edge.MaxY}");
+
         var interval = new Interval<float>(edge.MinY, edge.MaxY);
         _tree.Add(interval);
         _edgeMap[edge] = interval;
@@ -49,6 +52,9 @@ public class EdgeIntervalTree {
     /// <param name="edge"> 削除する辺 </param>
     public void RemoveEdge(NonConvexMonotoneCutSurfaceEdge edge) {
         if (_edgeMap.TryGetValue(edge, out var interval)) {
+
+            //Debug.Log($"EdgeIntervalTree: RemoveEdge - {edge.Start.VertexType} -> {edge.End.VertexType}, MinY: {edge.MinY}, MaxY: {edge.MaxY}");
+
             _tree.Remove(interval);
             _edgeMap.Remove(edge);
         }
@@ -66,7 +72,7 @@ public class EdgeIntervalTree {
 
         foreach (var pair in _edgeMap) {
             var edge = pair.Key;
-            if (y > edge.MinY + Epsilon && y < edge.MaxY - Epsilon) {
+            if (y > edge.MinY - Epsilon && y < edge.MaxY + Epsilon) {
                 result.Add(edge);
             }
         }

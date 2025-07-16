@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class DiagonalEdgeGenerator {
 
@@ -30,10 +31,7 @@ public class DiagonalEdgeGenerator {
     /// 対角線の集合 (以下 "D" とする)
     /// 一つの対角線を追加する際，両方向に分けて二つ追加していく
     /// </summary>
-    public HashSet<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> DiagonalSet { 
-        get; 
-        private set; 
-    } = new();
+    private List<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> _diagonalList = new();
 
     /// <summary>
     /// コンストラクタ
@@ -46,10 +44,30 @@ public class DiagonalEdgeGenerator {
         ProcessSweepLineForMakeDiagonalEdge(linkedVertexList);
     }
 
+    /// <summary>
+    /// 対角線のリストを取得するメソッド
+    /// 対角線は一つの辺につき二本登録される (始点 -> 終点, 終点 -> 始点 の向き)
+    /// </summary>
+    /// <returns> 対角線のリスト </returns>
+    public List<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> GetDiagonalEdges() {
+        return _diagonalList;
+    }
 
+    /// <summary>
+    /// 整形された辺のリストを取得するメソッド
+    /// </summary>
+    /// <returns> 辺のリスト </returns>
+    public List<List<NonConvexMonotoneCutSurfaceEdge>> GetEdgeList() {
+        return _edgeList;
+    }
+
+    /// <summary>
+    /// 連結辺シーケンスリストを整形するメソッド
+    /// </summary>
+    /// <param name="linkedVertexList"> 連結辺シーケンスのリスト </param>
     private void FormattingData(LinkedVertexList linkedVertexList) {
 
-        linkedVertexList.Formatting();
+        linkedVertexList.DeleteLastElement();
         linkedVertexList.ClusteringVertexType();
 
         for (int i = 0; i < linkedVertexList.Count; i++) {
@@ -124,8 +142,16 @@ public class DiagonalEdgeGenerator {
             var activeEdges = _edgeIntervalTree.GetEdgesPassThroughHorizon(currVertex.PlanePosition.y);
 
             foreach (var edge in activeEdges) {
+                Debug.Log($"DiagonalEdgeGenerator: Active edge found - {edge.Start.VertexType} -> {edge.End.VertexType}, MinY: {edge.MinY}, MaxY: {edge.MaxY}");
+            }
+
+            foreach (var edge in activeEdges) {
                 _sortedXPositionEdgeInTree.Add(edge, edge);
             }
+
+            Debug.Log($"DiagonalEdgeGenerator: Processing vertex {i} - {currVertex.VertexType}");
+
+            Debug.Log($"DiagonalEdgeGenerator: Current edge position - Start [{currEdge.Start.PlanePosition}], End [{currEdge.End.PlanePosition}]");
 
             switch (currVertex.VertexType) {
                 case VertexType.Regular:
@@ -173,17 +199,18 @@ public class DiagonalEdgeGenerator {
          * - - - then v[i] と helper(e[j]) を結ぶ対角線を D に挿入する
          * - - helper(e[j]) を v[i] にする
          */
-        if (currEdge.Start.LocalPosition.y < currEdge.End.LocalPosition.y)
+
+        if (currEdge.Start.PlanePosition.y < currEdge.End.PlanePosition.y)
             return;
-        if (prevEdge.Helper.VertexType == VertexType.Merge) {
-            DiagonalSet.Add((currVertex, prevEdge.Helper));
+        if (prevEdge.Helper?.VertexType == VertexType.Merge) {
+            _diagonalList.Add((currVertex, prevEdge.Helper));
             _edgeIntervalTree.RemoveEdge(prevEdge);
             _edgeIntervalTree.AddEdge(currEdge);
             currEdge.Helper = currVertex;
         } 
         else {
             var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
-            if (mostLeftNeighboringEdge.Helper.VertexType == VertexType.Merge) {
+            if (mostLeftNeighboringEdge.Helper?.VertexType == VertexType.Merge) {
                 AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
             }
             mostLeftNeighboringEdge.Helper = currVertex;
@@ -224,12 +251,12 @@ public class DiagonalEdgeGenerator {
          * - then v[i] と helper(e[j]) を結ぶ対角線を D に挿入する
          * helper(e[j]) を v[i] にする
          */
-        if (prevEdge.Helper.VertexType == VertexType.Merge) {
+        if (prevEdge.Helper?.VertexType == VertexType.Merge) {
             AddDiagonalEdge(currVertex, prevEdge.Helper);
         }
         _edgeIntervalTree.RemoveEdge(prevEdge);
         var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
-        if (mostLeftNeighboringEdge.Helper.VertexType == VertexType.Merge) {
+        if (mostLeftNeighboringEdge.Helper?.VertexType == VertexType.Merge) {
             AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
         }
         mostLeftNeighboringEdge.Helper = currVertex;
@@ -271,7 +298,7 @@ public class DiagonalEdgeGenerator {
          * - then v[i] と helper(e[i-1]) を結ぶ対角線を D に挿入する
          * e[i-1] を T から削除する
          */
-        if (prevEdge.Helper.VertexType == VertexType.Merge) {
+        if (prevEdge.Helper?.VertexType == VertexType.Merge) {
             AddDiagonalEdge(currVertex, prevEdge.Helper);
         }
         _edgeIntervalTree.RemoveEdge(prevEdge);
@@ -286,7 +313,7 @@ public class DiagonalEdgeGenerator {
         NonConvexMonotoneCutSurfaceVertex startVertex,
         NonConvexMonotoneCutSurfaceVertex endVertex
     ) {
-        DiagonalSet.Add((startVertex, endVertex));
-        DiagonalSet.Add((endVertex, startVertex));
+        _diagonalList.Add((startVertex, endVertex));
+        _diagonalList.Add((endVertex, startVertex));
     }
 }

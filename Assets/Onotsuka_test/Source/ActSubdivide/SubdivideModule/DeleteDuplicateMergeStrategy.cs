@@ -18,8 +18,6 @@ public class DeleteDuplicateMergeStrategy<T> : INodeSequenceMergeStrategy<T>
     /// <param name="otherLastNode"> マージする側の他のシーケンスの末尾ノード </param>
     public void MergeAfterStrategy(LinkedList<T> currentLinkedList, IEnumerable<T> otherItemsEnumerable, LinkedListNode<T>? otherFirstNode, LinkedListNode<T>? otherLastNode) {
 
-        Debug.Log($"DeleteDuplicateMergeStrategy: call MergeAfterStrategy().");
-
         if (otherItemsEnumerable == null) {
             throw new ArgumentNullException(nameof(otherItemsEnumerable), "Other items enumerable cannot be null.");
         }
@@ -43,8 +41,6 @@ public class DeleteDuplicateMergeStrategy<T> : INodeSequenceMergeStrategy<T>
     /// <param name="otherFirstNode"> マージする側の他のシーケンスの先頭ノード </param>
     /// <param name="otherLastNode"> マージする側の他のシーケンスの末尾ノード </param>
     public void MergeBeforeStrategy(LinkedList<T> currentLinkedList, IEnumerable<T> otherItemsEnumerable, LinkedListNode<T>? otherFirstNode, LinkedListNode<T>? otherLastNode) {
-
-        Debug.Log($"DeleteDuplicateMergeStrategy: call MergeBeforeStrategy().");
 
         if (otherItemsEnumerable == null) {
             throw new ArgumentNullException(nameof(otherItemsEnumerable), "Other items enumerable cannot be null.");

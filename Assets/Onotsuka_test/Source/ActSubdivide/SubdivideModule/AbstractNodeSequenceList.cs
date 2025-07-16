@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -9,6 +10,20 @@ using System.Collections.Generic;
 public abstract class AbstractNodeSequenceList<TNodeSequence, TItem> : IEnumerable<TNodeSequence>
     where TNodeSequence : AbstractNodeSequence<TItem>, new()
     where TItem : class {
+
+    /// <summary>
+    /// インデクサー
+    /// </summary>
+    /// <param name="index"> インデックス番号 </param>
+    /// <returns> 対応する要素 </returns>
+    public AbstractNodeSequence<TItem> this[int index] {
+        get {
+            if (index < 0 || index >= _nodeSequenceList.Count) {
+                throw new IndexOutOfRangeException("Index is out of range.");
+            }
+            return _nodeSequenceList[index];
+        }
+    }
 
     /// <summary>
     /// 連結した要素のシーケンスを保持するリスト
@@ -37,6 +52,16 @@ public abstract class AbstractNodeSequenceList<TNodeSequence, TItem> : IEnumerab
     /// </summary>
     /// <param name="args"> 追加する要素 </param>
     public abstract void Add(params object[] args);
+
+    /// <summary>
+    /// 連結要素シーケンスのリスト内のすべてのシーケンスに対して，最後の要素を削除するメソッド
+    /// </summary>
+    public void DeleteLastElement() {
+
+        foreach (var linkedList in _nodeSequenceList) {
+            linkedList.DeleteLastElement();
+        }
+    }
 
     /// <summary>
     /// リスト中の指定されたインデックスのシーケンスに対して、後ろにマージできるシーケンスを探してマージを試みるメソッド

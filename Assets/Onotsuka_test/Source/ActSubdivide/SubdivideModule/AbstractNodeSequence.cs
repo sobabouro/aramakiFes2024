@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ using UnityEngine;
 /// 連結した要素の管理を行う抽象基底クラス
 /// </summary>
 /// <typeparam name="T"> ノードとして管理するオブジェクト </typeparam>
-public abstract class AbstractNodeSequence<T>
+public abstract class AbstractNodeSequence<T> : IEnumerable<T>
     where T : class {
 
     private INodeSequenceMergeStrategy<T> _mergeStrategy;
@@ -31,6 +32,18 @@ public abstract class AbstractNodeSequence<T>
     /// 連結要素の数を取得するプロパティ
     /// </summary>
     public int Count => _nodeSequence.Count;
+
+    /// <summary>
+    /// シーケンスのリストを列挙するためのイテレータを返すメソッド
+    /// </summary>
+    /// <returns> シーケンスのリストを列挙するためのイテレータ </returns>
+    public IEnumerator<T> GetEnumerator() => _nodeSequence.GetEnumerator();
+
+    /// <summary>
+    /// IEnumerable インターフェースの GetEnumerator メソッドの実装
+    /// </summary>
+    /// <returns> シーケンスのリストを列挙するためのイテレータ </returns>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>
     /// 連結要素のシーケンスのコレクションを取得するプロパティ
@@ -65,7 +78,6 @@ public abstract class AbstractNodeSequence<T>
         if (_mergeStrategy == null) {
             throw new InvalidOperationException("Merge strategy is not set.");
         }
-        Debug.Log($"AbstractNodeSequence: call MergeAfter()");
         _mergeStrategy.MergeAfterStrategy(_nodeSequence, other.GetItemsEnumerable(), other.First, other.Last);
     }
 
@@ -77,7 +89,6 @@ public abstract class AbstractNodeSequence<T>
         if (_mergeStrategy == null) {
             throw new InvalidOperationException("Merge strategy is not set.");
         }
-        Debug.Log($"AbstractNodeSequence: call MergeBefore()");
         _mergeStrategy.MergeBeforeStrategy(_nodeSequence, other.GetItemsEnumerable(), other.First, other.Last);
     }
 
@@ -87,5 +98,12 @@ public abstract class AbstractNodeSequence<T>
     /// <param name="nodeToDelete"> 削除するノード </param>
     public void RemoveNode(LinkedListNode<T> nodeToDelete) {
         _nodeSequence.Remove(nodeToDelete);
+    }
+
+    /// <summary>
+    /// シーケンスの最後の要素を削除するメソッド
+    /// </summary>
+    public void DeleteLastElement() {
+        _nodeSequence.Remove(_nodeSequence.Last);
     }
 }

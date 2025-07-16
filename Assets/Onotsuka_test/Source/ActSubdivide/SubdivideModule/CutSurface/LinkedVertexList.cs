@@ -1,27 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
 /// 連結辺シーケンス (LinkedVertex) のリストを管理するクラス
 /// </summary>
 public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NonConvexMonotoneCutSurfaceVertex> {
-
-    /// <summary>
-    /// インデクサー
-    /// </summary>
-    /// <param name="index"></param>
-    /// <returns></returns>
-    public LinkedVertex this[int index] {
-        get {
-            if (index < 0 || index >= _nodeSequenceList.Count) {
-                throw new IndexOutOfRangeException("Index is out of range.");
-            }
-            return _nodeSequenceList[index];
-        }
-    }
 
     /// <summary>
     /// 連結辺シーケンスに頂点を追加するメソッド
@@ -64,17 +48,6 @@ public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NonConvex
         if (target == null)
             return false;
         return target.Equals(key);
-    }
-
-
-    /// <summary>
-    /// 連結辺シーケンスのリスト内のすべての新頂点たちに対して，重複した頂点を削除するメソッド
-    /// </summary>
-    public void Formatting() {
-
-        foreach (var linkedVertex in _nodeSequenceList) {
-            linkedVertex.Formatting();
-        }
     }
 
     /// <summary>

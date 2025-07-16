@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using CalculationUtils;
 
 /// <summary>
 /// 法線方向ごとにポリゴンの情報を保持するクラス
@@ -19,7 +20,7 @@ public class EquivalentNormalPolygonBuffer {
     /// <param name="normal"> ポリゴンの法線ベクトル (正規化) </param>
     /// <param name="polygon"> ポリゴン情報 </param>
     public void Add(Vector3 normal, NewPolygon polygon) {
-        int castedNormal = NormalizedVector3ToInt(normal);
+        int castedNormal = Calculation.NormalizedVector3ToInt(normal);
 
         // 登録されている法線の場合は、同じ法線の連結ポリゴンリストに追加する
         if (_polygonDictionary.TryGetValue(castedNormal, out LinkedPolygonList linkedPolygonList)) {
@@ -61,24 +62,5 @@ public class EquivalentNormalPolygonBuffer {
                 cutSurfacePolygonBuffer
             );
         }
-    }
-
-    /// <summary>
-    /// 法線ベクトルを int 型に圧縮するメソッド
-    /// 0.0 ~ 1.0 の範囲のベクトルをスケーリングして、上位 22bit を制限し、(x, y, z)10bit ずつの情報に圧縮する
-    /// およそ各小数点以下第二位までの精度となる (第三位まで許容したければ、(long) にして 14bit(16384) シフトして対応する上位ビットを制限する)
-    /// </summary>
-    /// <param name="vector"> 法線ベクトル </param>
-    /// <returns> int 型へ圧縮した法線 </returns>
-    private int NormalizedVector3ToInt(Vector3 vector) {
-        // 0 ~ 1023 の範囲に制限する (下位 10bit のみが対象)
-        int filter = 0x000003FF;
-        int amp = 1 << 10;
-
-        int x = ((int)(vector.x * amp) & filter) << 20;
-        int y = ((int)(vector.y * amp) & filter) << 10;
-        int z = ((int)(vector.z * amp) & filter);
-
-        return x | y | z;
     }
 }
