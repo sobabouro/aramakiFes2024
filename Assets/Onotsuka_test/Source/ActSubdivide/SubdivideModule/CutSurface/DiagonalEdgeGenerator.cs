@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 
 public class DiagonalEdgeGenerator {
@@ -118,10 +119,8 @@ public class DiagonalEdgeGenerator {
 
             Debug.Log($"DiagonalEdgeGenerator: ===== vertex {vertex.PlanePosition.ToString("F6")} =====");
 
-            for (int i = 0; i < _sortedXPositionEdgeInTree.Count; i++) {
-                foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
-                    Debug.Log($"intersect edge - Start {edge.Start.PlanePosition.ToString("F6")}, End {edge.End.PlanePosition.ToString("F6")}");
-                }
+            foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
+                Debug.Log($"intersect edge - Start {edge.Start.PlanePosition.ToString("F6")}, End {edge.End.PlanePosition.ToString("F6")}");
             }
 
             throw new InvalidOperationException("no neighboring edge found for the vertex.");
@@ -181,6 +180,16 @@ public class DiagonalEdgeGenerator {
                     break;
             }
             _sortedXPositionEdgeInTree.Clear();
+            Debug.Log($"DiagonalEdgeGenerator: sorted dictionary cleared!");
+
+            if (_sortedXPositionEdgeInTree.Count == 0) {
+                Debug.Log($"DiagonalEdgeGenerator: No edges remaining in the sorted dictionary.");
+            } else {
+                Debug.Log($"DiagonalEdgeGenerator: Remaining edges in the sorted dictionary: {_sortedXPositionEdgeInTree.Count}");
+            }
+            foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
+                Debug.Log($"DiagonalEdgeGenerator: Remaining edge - Start {edge.Start.PlanePosition.ToString("F6")}, End {edge.End.PlanePosition.ToString("F6")}");
+            }
         }
     }
 
