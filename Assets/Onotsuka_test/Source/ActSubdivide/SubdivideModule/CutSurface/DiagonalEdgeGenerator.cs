@@ -6,6 +6,11 @@ using UnityEngine;
 public class DiagonalEdgeGenerator {
 
     /// <summary>
+    /// 浮動小数点数の誤差吸収用
+    /// </summary>
+    private const float Epsilon = 0.0001f;
+
+    /// <summary>
     /// 図形すべての頂点を y 座標でソートした順番のインデックスリスト
     /// 図形ごと (LinkedVertexList ごと) の連結辺の番地に対応する
     /// もとの頂点リストでの頂点を "v" とする
@@ -87,7 +92,7 @@ public class DiagonalEdgeGenerator {
                     edges.Add(edge);
                     _edgeIntervalTree.AddEdge(edge);
 
-                    Debug.Log($"DiagonalEdgeGenerator: edge position is {edge.Start.PlanePosition.ToString("F6")} -> {edge.End.PlanePosition.ToString("F6")}");
+                    //Debug.Log($"DiagonalEdgeGenerator: edge position is {edge.Start.PlanePosition.ToString("F6")} -> {edge.End.PlanePosition.ToString("F6")}");
                 }
                 currentNode = currentNode.Next;
             }
@@ -109,10 +114,28 @@ public class DiagonalEdgeGenerator {
         NonConvexMonotoneCutSurfaceEdge? mostLeftNeighboringEdge = null;
 
         foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
-            int comparisonResult = _sortedXPositionEdgeInTree.Comparer.Compare(edge, tmpSearchKey);
+            int comparisonResult = _sortedXPositionEdgeInTree.Comparer.Compare(tmpSearchKey, edge);
 
+            Debug.Log($"DiagonalEdgeGenerator: Comparing edge {edge.Start.PlanePosition.ToString("F6")} -> {edge.End.PlanePosition.ToString("F6")} with vertex {vertex.PlanePosition.ToString("F6")}, result: {comparisonResult}");
+
+            // 対象の辺が頂点よりも右側にある場合
             if (comparisonResult < 0) {
-                mostLeftNeighboringEdge = edge;
+
+                Debug.Log($"◆ edge exist rightside");
+
+                // 現在の頂点を含む辺ではない場合
+                if (Math.Abs(edge.Start.PlanePosition.x - vertex.PlanePosition.x) > Epsilon && Math.Abs(edge.End.PlanePosition.x - vertex.PlanePosition.x) > Epsilon) {
+                    // 最も左側の辺を更新する
+                    mostLeftNeighboringEdge = edge;
+
+                    Debug.Log($"◆ updated");
+                } 
+                else {
+                    Debug.Log($"◆ Not updated, because it is the same vertex position");
+                }
+            } 
+            else {
+                Debug.Log($"◆ edge NOT exist rightside");
             }
         }
         if (mostLeftNeighboringEdge == null) {

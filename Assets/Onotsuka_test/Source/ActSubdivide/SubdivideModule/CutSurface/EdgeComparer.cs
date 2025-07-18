@@ -34,6 +34,8 @@ public class EdgeComparer : IComparer<NonConvexMonotoneCutSurfaceEdge> {
         float x1 = edge1.GetXPositionIntersectionWithHorizon(HorizonY);
         float x2 = edge2.GetXPositionIntersectionWithHorizon(HorizonY);
 
+        Debug.Log($"EdgeComparer: edge1.x is [{x1.ToString("F6")}], edge2.x is [{x2.ToString("F6")}]");
+
         if (Mathf.Abs(x1 - x2) < Epsilon) {
             return edge1.GetHashCode().CompareTo(edge2.GetHashCode());
         }
