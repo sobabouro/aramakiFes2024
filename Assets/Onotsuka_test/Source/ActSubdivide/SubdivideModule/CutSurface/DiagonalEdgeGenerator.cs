@@ -114,8 +114,18 @@ public class DiagonalEdgeGenerator {
                 mostLeftNeighboringEdge = edge;
             }
         }
-        if (mostLeftNeighboringEdge == null)
+        if (mostLeftNeighboringEdge == null) {
+
+            Debug.Log($"DiagonalEdgeGenerator: ===== vertex {vertex.PlanePosition.ToString("F6")} =====");
+
+            for (int i = 0; i < _sortedXPositionEdgeInTree.Count; i++) {
+                foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
+                    Debug.Log($"intersect edge - Start {edge.Start.PlanePosition.ToString("F6")}, End {edge.End.PlanePosition.ToString("F6")}");
+                }
+            }
+
             throw new InvalidOperationException("no neighboring edge found for the vertex.");
+        }
         return mostLeftNeighboringEdge;
     }
 
@@ -150,8 +160,8 @@ public class DiagonalEdgeGenerator {
 
             Debug.Log($"DiagonalEdgeGenerator: Processing vertex {i} - {currVertex.VertexType}");
 
-            //Debug.Log($"DiagonalEdgeGenerator: Previous edge position - Start [{prevEdge.Start.PlanePosition.ToString("F6")}], End [{prevEdge.End.PlanePosition.ToString("F6")}]");
-            Debug.Log($"DiagonalEdgeGenerator: Current edge position - Start [{currEdge.Start.PlanePosition.ToString("F6")}], End [{currEdge.End.PlanePosition.ToString("F6")}]");
+            //Debug.Log($"DiagonalEdgeGenerator: Previous edge position - Start {prevEdge.Start.PlanePosition.ToString("F6")}, End {prevEdge.End.PlanePosition.ToString("F6")}");
+            Debug.Log($"DiagonalEdgeGenerator: Current edge position - Start {currEdge.Start.PlanePosition.ToString("F6")}, End {currEdge.End.PlanePosition.ToString("F6")}");
 
             switch (currVertex.VertexType) {
                 case VertexType.Regular:
@@ -170,10 +180,7 @@ public class DiagonalEdgeGenerator {
                     HandleEndVertex(currVertex, prevEdge);
                     break;
             }
-
-            foreach (var edge in activeEdges) {
-                _sortedXPositionEdgeInTree.Remove(edge);
-            }
+            _sortedXPositionEdgeInTree.Clear();
         }
     }
 
