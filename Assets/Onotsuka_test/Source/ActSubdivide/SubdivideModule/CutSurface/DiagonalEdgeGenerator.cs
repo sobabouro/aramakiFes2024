@@ -85,6 +85,8 @@ public class DiagonalEdgeGenerator {
                     NonConvexMonotoneCutSurfaceEdge edge = new NonConvexMonotoneCutSurfaceEdge(startVertex, endVertex);
                     edges.Add(edge);
                     _edgeIntervalTree.AddEdge(edge);
+
+                    Debug.Log($"DiagonalEdgeGenerator: edge position is {edge.Start.PlanePosition.ToString("F6")} -> {edge.End.PlanePosition.ToString("F6")}");
                 }
                 currentNode = currentNode.Next;
             }
@@ -110,9 +112,6 @@ public class DiagonalEdgeGenerator {
 
             if (comparisonResult < 0) {
                 mostLeftNeighboringEdge = edge;
-            } 
-            else {
-                break;
             }
         }
         if (mostLeftNeighboringEdge == null)
@@ -151,7 +150,8 @@ public class DiagonalEdgeGenerator {
 
             Debug.Log($"DiagonalEdgeGenerator: Processing vertex {i} - {currVertex.VertexType}");
 
-            Debug.Log($"DiagonalEdgeGenerator: Current edge position - Start [{currEdge.Start.PlanePosition}], End [{currEdge.End.PlanePosition}]");
+            //Debug.Log($"DiagonalEdgeGenerator: Previous edge position - Start [{prevEdge.Start.PlanePosition.ToString("F6")}], End [{prevEdge.End.PlanePosition.ToString("F6")}]");
+            Debug.Log($"DiagonalEdgeGenerator: Current edge position - Start [{currEdge.Start.PlanePosition.ToString("F6")}], End [{currEdge.End.PlanePosition.ToString("F6")}]");
 
             switch (currVertex.VertexType) {
                 case VertexType.Regular:
