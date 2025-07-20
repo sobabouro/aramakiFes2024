@@ -116,26 +116,20 @@ public class DiagonalEdgeGenerator {
         foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
             int comparisonResult = _sortedXPositionEdgeInTree.Comparer.Compare(tmpSearchKey, edge);
 
-            Debug.Log($"DiagonalEdgeGenerator: Comparing edge {edge.Start.PlanePosition.ToString("F6")} -> {edge.End.PlanePosition.ToString("F6")} with vertex {vertex.PlanePosition.ToString("F6")}, result: {comparisonResult}");
+            //Debug.Log($"DiagonalEdgeGenerator: Comparing edge {edge.Start.PlanePosition.ToString("F6")} -> {edge.End.PlanePosition.ToString("F6")} with vertex {vertex.PlanePosition.ToString("F6")}, result: {comparisonResult}");
 
             // 対象の辺が頂点よりも右側にある場合
             if (comparisonResult < 0) {
 
-                Debug.Log($"◆ edge exist rightside");
+                //Debug.Log($"◆ edge exist rightside");
 
                 // 現在の頂点を含む辺ではない場合
                 if (Math.Abs(edge.Start.PlanePosition.x - vertex.PlanePosition.x) > Epsilon && Math.Abs(edge.End.PlanePosition.x - vertex.PlanePosition.x) > Epsilon) {
                     // 最も左側の辺を更新する
                     mostLeftNeighboringEdge = edge;
 
-                    Debug.Log($"◆ updated");
-                } 
-                else {
-                    Debug.Log($"◆ Not updated, because it is the same vertex position");
+                    //Debug.Log($"◆ updated");
                 }
-            } 
-            else {
-                Debug.Log($"◆ edge NOT exist rightside");
             }
         }
         if (mostLeftNeighboringEdge == null) {
@@ -173,17 +167,13 @@ public class DiagonalEdgeGenerator {
             var activeEdges = _edgeIntervalTree.GetEdgesPassThroughHorizon(currVertex.PlanePosition.y);
 
             foreach (var edge in activeEdges) {
-                Debug.Log($"DiagonalEdgeGenerator: Active edge found - {edge.Start.VertexType} -> {edge.End.VertexType}, MinY: {edge.MinY}, MaxY: {edge.MaxY}");
-            }
-
-            foreach (var edge in activeEdges) {
                 _sortedXPositionEdgeInTree.Add(edge, edge);
             }
 
             Debug.Log($"DiagonalEdgeGenerator: Processing vertex {i} - {currVertex.VertexType}");
 
             //Debug.Log($"DiagonalEdgeGenerator: Previous edge position - Start {prevEdge.Start.PlanePosition.ToString("F6")}, End {prevEdge.End.PlanePosition.ToString("F6")}");
-            Debug.Log($"DiagonalEdgeGenerator: Current edge position - Start {currEdge.Start.PlanePosition.ToString("F6")}, End {currEdge.End.PlanePosition.ToString("F6")}");
+            //Debug.Log($"DiagonalEdgeGenerator: Current edge position - Start {currEdge.Start.PlanePosition.ToString("F6")}, End {currEdge.End.PlanePosition.ToString("F6")}");
 
             switch (currVertex.VertexType) {
                 case VertexType.Regular:
@@ -203,16 +193,6 @@ public class DiagonalEdgeGenerator {
                     break;
             }
             _sortedXPositionEdgeInTree.Clear();
-            Debug.Log($"DiagonalEdgeGenerator: sorted dictionary cleared!");
-
-            if (_sortedXPositionEdgeInTree.Count == 0) {
-                Debug.Log($"DiagonalEdgeGenerator: No edges remaining in the sorted dictionary.");
-            } else {
-                Debug.Log($"DiagonalEdgeGenerator: Remaining edges in the sorted dictionary: {_sortedXPositionEdgeInTree.Count}");
-            }
-            foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
-                Debug.Log($"DiagonalEdgeGenerator: Remaining edge - Start {edge.Start.PlanePosition.ToString("F6")}, End {edge.End.PlanePosition.ToString("F6")}");
-            }
         }
     }
 
