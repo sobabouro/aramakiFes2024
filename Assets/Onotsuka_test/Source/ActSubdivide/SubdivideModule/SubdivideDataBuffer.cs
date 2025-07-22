@@ -11,9 +11,17 @@ public class SubdivideDataBuffer {
     /// <summary>
     /// 法線方向ごとにポリゴンの情報を保持するバッファ
     /// </summary>
-    private EquivalentNormalPolygonBuffer _polygonBuffer = new();
+    private EquivalentNormalPolygonBuffer _polygonBuffer;
 
-    private CutSurfacePolygonBuffer _cutSurfacePolygonBuffer = new();
+    /// <summary>
+    /// 切断面のポリゴン情報を保持するバッファ
+    /// </summary>
+    private CutSurfacePolygonBuffer _cutSurfacePolygonBuffer;
+
+    public SubdivideDataBuffer(Plane localPlane) {
+        _polygonBuffer = new EquivalentNormalPolygonBuffer(localPlane);
+        _cutSurfacePolygonBuffer = new CutSurfacePolygonBuffer(localPlane);
+    }
 
     /// <summary>
     /// 新しいポリゴン情報を追加するメソッド
@@ -44,7 +52,6 @@ public class SubdivideDataBuffer {
     }
 
     public void MakeAllPolygon(
-        Plane localPlane, 
         int[] trackerArray, 
         MeshContainer originMesh, 
         MeshContainer frontsideMesh, 
@@ -52,7 +59,6 @@ public class SubdivideDataBuffer {
         bool addCutSurfaceMaterial = false
     ) {
         _polygonBuffer.MakeBaseSurfacePolygon(
-            localPlane, 
             trackerArray, 
             originMesh, 
             frontsideMesh, 
@@ -60,7 +66,6 @@ public class SubdivideDataBuffer {
             _cutSurfacePolygonBuffer
         );
         _cutSurfacePolygonBuffer.MakeCutSurfacePolygon(
-            localPlane,
             frontsideMesh,
             backsideMesh,
             addCutSurfaceMaterial

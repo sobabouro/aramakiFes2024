@@ -77,7 +77,7 @@ public class LinkedPolygon : AbstractNodeSequence<NewPolygon> {
         backsideMesh.AddVertex(awayPosition, awayNormal, awayUV, out int backsideNewStartIndex);
         backsideMesh.AddVertex(towardPosition, towardNormal, towardUV, out int backsideNewEndIndex);
 
-        cutSurfacePolygonBuffer.AddVertex(localPlane, towardPosition, awayPosition);
+        cutSurfacePolygonBuffer.AddVertex(towardPosition, awayPosition);
 
         // frontside 用に連結ポリゴンのノードを辿りながらポリゴン情報を生成する
         ScanNode(

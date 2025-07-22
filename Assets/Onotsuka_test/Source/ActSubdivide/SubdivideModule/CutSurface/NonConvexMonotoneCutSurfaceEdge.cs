@@ -42,4 +42,12 @@ public class NonConvexMonotoneCutSurfaceEdge : Edge<NonConvexMonotoneCutSurfaceV
                (End.PlanePosition.x - Start.PlanePosition.x) /
                (End.PlanePosition.y - Start.PlanePosition.y);
     }
+
+    /// <summary>
+    /// this 辺の逆辺を取得するメソッド
+    /// </summary>
+    /// <returns> 対象の辺と逆向きの辺 </returns>
+    public NonConvexMonotoneCutSurfaceEdge GetReverseEdge() {
+        return new NonConvexMonotoneCutSurfaceEdge(End, Start);
+    }
 }

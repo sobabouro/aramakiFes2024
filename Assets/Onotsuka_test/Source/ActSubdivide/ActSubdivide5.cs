@@ -36,6 +36,14 @@ public class ActSubdivide5 : MonoBehaviour {
             return (null, null);
         }
 
+        // ローカル平面用
+        Vector3 scale = targetTransform.localScale;
+        Vector3 pointOnPlane = cutter.normal * cutter.distance;
+        Vector3 localPlaneNormal = Vector3.Scale(scale, targetTransform.InverseTransformDirection(cutter.normal)).normalized;
+        Vector3 anchor = targetTransform.transform.InverseTransformPoint(pointOnPlane);
+        float localPlaneDistance = Vector3.Dot(localPlaneNormal, anchor);
+        Plane localPlane = new(localPlaneNormal, localPlaneDistance);
+
         // 切断前オブジェクトのメッシュ情報の整理
         MeshContainer originMesh = new(targetMesh);
 
@@ -50,15 +58,7 @@ public class ActSubdivide5 : MonoBehaviour {
         int[] trackerArray = new int[originMesh.Vertices.Count];
 
         // 切断処理が行われるポリゴンが切断された後の、新規ポリゴン情報を格納する
-        SubdivideDataBuffer subdivideDataBuffer = new();
-
-        // ローカル平面用
-        Vector3 scale = targetTransform.localScale;
-        Vector3 pointOnPlane = cutter.normal * cutter.distance;
-        Vector3 localPlaneNormal = Vector3.Scale(scale, targetTransform.InverseTransformDirection(cutter.normal)).normalized;
-        Vector3 anchor = targetTransform.transform.InverseTransformPoint(pointOnPlane);
-        float localPlaneDistance = Vector3.Dot(localPlaneNormal, anchor);
-        Plane localPlane = new(localPlaneNormal, localPlaneDistance);
+        SubdivideDataBuffer subdivideDataBuffer = new(localPlane);
 
 
         // ==== ここからデバッグ用コードを追加 ====
@@ -186,7 +186,6 @@ public class ActSubdivide5 : MonoBehaviour {
 
         // 融解・蓄積した切断対象ポリゴン情報をもとに、MeshTopology.Triangles で再生成を行う
         subdivideDataBuffer.MakeAllPolygon(
-            localPlane,
             trackerArray,
             originMesh,
             frontsideMesh,
