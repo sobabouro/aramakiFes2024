@@ -37,7 +37,7 @@ public class DiagonalEdgeGenerator {
     /// 対角線の集合 (以下 "D" とする)
     /// 一つの対角線を追加する際，両方向に分けて二つ追加していく
     /// </summary>
-    private List<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> _diagonalList = new();
+    private HashSet<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> _diagonalSet = new();
 
     /// <summary>
     /// コンストラクタ
@@ -55,8 +55,8 @@ public class DiagonalEdgeGenerator {
     /// 対角線は一つの辺につき二本登録される (始点 -> 終点, 終点 -> 始点 の向き)
     /// </summary>
     /// <returns> 対角線のリスト </returns>
-    public List<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> GetDiagonalEdges() {
-        return _diagonalList;
+    public HashSet<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> GetDiagonalSet() {
+        return _diagonalSet;
     }
 
     /// <summary>
@@ -222,7 +222,7 @@ public class DiagonalEdgeGenerator {
         if (currEdge.Start.PlanePosition.y < currEdge.End.PlanePosition.y)
             return;
         if (prevEdge.Helper?.VertexType == VertexType.Merge) {
-            _diagonalList.Add((currVertex, prevEdge.Helper));
+            _diagonalSet.Add((currVertex, prevEdge.Helper));
             _edgeIntervalTree.RemoveEdge(prevEdge);
             _edgeIntervalTree.AddEdge(currEdge);
             currEdge.Helper = currVertex;
@@ -332,7 +332,6 @@ public class DiagonalEdgeGenerator {
         NonConvexMonotoneCutSurfaceVertex startVertex,
         NonConvexMonotoneCutSurfaceVertex endVertex
     ) {
-        _diagonalList.Add((startVertex, endVertex));
-        _diagonalList.Add((endVertex, startVertex));
+        _diagonalSet.Add((startVertex, endVertex));
     }
 }
