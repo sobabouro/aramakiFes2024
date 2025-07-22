@@ -42,34 +42,6 @@ public class LinkedMonotoneGeometryVertex : AbstractNodeSequence<NonConvexMonoto
     public LinkedMonotoneGeometryVertex(INodeSequenceMergeStrategy<NonConvexMonotoneCutSurfaceVertex> mergeStrategy) : base(mergeStrategy) { }
 
     /// <summary>
-    /// 循環ノードのように各ノードにアクセスするためのメソッド
-    /// 次のノードを取得するメソッド
-    /// </summary>
-    /// <param name="node"> 対象ノード </param>
-    /// <returns> 対象ノードの次のノード </returns>
-    public LinkedListNode<NonConvexMonotoneCutSurfaceVertex> TorusNext(LinkedListNode<NonConvexMonotoneCutSurfaceVertex> node) {
-
-        if (node == null || _nodeSequence.Count == 0)
-            return null;
-
-        return node.Next ?? _nodeSequence.First;
-    }
-
-    /// <summary>
-    /// 循環ノードのように各ノードにアクセスするためのメソッド
-    /// 前のノードを取得するメソッド
-    /// </summary>
-    /// <param name="node"> 対象ノード </param>
-    /// <returns> 対象ノードの前のノード </returns>
-    public LinkedListNode<NonConvexMonotoneCutSurfaceVertex> TorusPrevious(LinkedListNode<NonConvexMonotoneCutSurfaceVertex> node) {
-
-        if (node == null || _nodeSequence.Count == 0)
-            return null;
-
-        return node.Previous ?? _nodeSequence.Last;
-    }
-
-    /// <summary>
     /// 対象の辺を連結辺に対して後ろに追加するメソッド
     /// </summary>
     /// <param name="args"> (NonConvexMonotoneCutSurfaceVertex 始点, NonConvexMonotoneCutSurfaceVertex 終点) の引数 </param>
@@ -282,33 +254,22 @@ public class LinkedMonotoneGeometryVertex : AbstractNodeSequence<NonConvexMonoto
     /// </summary>
     private void ClusteringSideType() {
 
-        Debug.Log($"LinkedMonotoneGeometryVertex: most highest is {_mostHighestNode.Value.PlanePosition}");
-        Debug.Log($"LinkedMonotoneGeometryVertex: most lowest is {_mostLowestNode.Value.PlanePosition}");
-
         var currentNode = _mostHighestNode;
         currentNode.Value.SideType = SideType.Top;
-
-        Debug.Log($"LinkedMonotoneGeometryVertex: Most Highest Node - {currentNode.Value.PlanePosition}, SideType: {currentNode.Value.SideType}");
 
         currentNode = TorusNext(currentNode);
 
         while (currentNode != _mostLowestNode) {
             currentNode.Value.SideType = SideType.Left;
 
-            Debug.Log($"LinkedMonotoneGeometryVertex: Current Node - {currentNode.Value.PlanePosition}, SideType: {currentNode.Value.SideType}");
-
             currentNode = TorusNext(currentNode);
         }
         currentNode.Value.SideType = SideType.Bottom;
-
-        Debug.Log($"LinkedMonotoneGeometryVertex: Most Lowest Node - {currentNode.Value.PlanePosition}, SideType: {currentNode.Value.SideType}");
 
         currentNode = TorusNext(currentNode);
 
         while (currentNode != _mostHighestNode) {
             currentNode.Value.SideType = SideType.Right;
-
-            Debug.Log($"LinkedMonotoneGeometryVertex: Current Node - {currentNode.Value.PlanePosition}, SideType: {currentNode.Value.SideType}");
 
             currentNode = TorusNext(currentNode);
         }

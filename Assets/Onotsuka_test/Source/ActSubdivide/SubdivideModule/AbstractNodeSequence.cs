@@ -50,14 +50,49 @@ public abstract class AbstractNodeSequence<T> : IEnumerable<T>
     /// </summary>
     protected IEnumerable<T> GetItemsEnumerable() => _nodeSequence;
 
+    /// <summary>
+    /// 連結要素のマージ戦略プロパティ
+    /// </summary>
     public INodeSequenceMergeStrategy<T> MergeStrategy {
         get => _mergeStrategy;
         set => _mergeStrategy = value
             ?? throw new ArgumentNullException(nameof(value), "Merge strategy cannot be null.");
     }
 
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    /// <param name="mergeStrategy"> 連結要素のマージ戦略 </param>
     protected AbstractNodeSequence(INodeSequenceMergeStrategy<T> mergeStrategy) {
         _mergeStrategy = mergeStrategy;
+    }
+
+    /// <summary>
+    /// 循環ノードのように各ノードにアクセスするためのメソッド
+    /// 次のノードを取得するメソッド
+    /// </summary>
+    /// <param name="node"> 対象ノード </param>
+    /// <returns> 対象ノードの次のノード </returns>
+    public LinkedListNode<T> TorusNext(LinkedListNode<T> node) {
+
+        if (node == null || _nodeSequence.Count == 0)
+            return null;
+
+        return node.Next ?? _nodeSequence.First;
+    }
+
+    /// <summary>
+    /// 循環ノードのように各ノードにアクセスするためのメソッド
+    /// 前のノードを取得するメソッド
+    /// </summary>
+    /// <param name="node"> 対象ノード </param>
+    /// <returns> 対象ノードの前のノード </returns>
+    public LinkedListNode<T> TorusPrevious(LinkedListNode<T> node) {
+
+        if (node == null || _nodeSequence.Count == 0)
+            return null;
+
+        return node.Previous ?? _nodeSequence.Last;
     }
 
     /// <summary>
