@@ -19,7 +19,7 @@ public class MonotoneGeometryPathList {
     /// すべての図形の中で最も高い X 座標を持つ頂点の位置
     /// UV 座標の構築に使用する
     /// </summary>
-    private BoundingBox _boundingBox = new BoundingBox();
+    private BoundingBox _boundingBox;
 
     /// <summary>
     /// コンストラクタ
@@ -32,6 +32,8 @@ public class MonotoneGeometryPathList {
         HashSet<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> diagonalSet
     ) {
         _map = new Dictionary<NonConvexMonotoneCutSurfaceVertex, List<NonConvexMonotoneCutSurfaceEdge>>();
+        _pathList = new List<MonotoneGeometryPath>();
+        _boundingBox = new BoundingBox();
 
         /**
          * ここで，_linkedVertexList の重複頂点削除が済んでいるかチェックする必要あり．
