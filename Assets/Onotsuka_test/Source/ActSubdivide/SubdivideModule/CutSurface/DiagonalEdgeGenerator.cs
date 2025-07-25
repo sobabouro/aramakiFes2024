@@ -91,8 +91,6 @@ public class DiagonalEdgeGenerator {
                     NonConvexMonotoneCutSurfaceEdge edge = new NonConvexMonotoneCutSurfaceEdge(startVertex, endVertex);
                     edges.Add(edge);
                     _edgeIntervalTree.AddEdge(edge);
-
-                    //Debug.Log($"DiagonalEdgeGenerator: edge position is {edge.Start.PlanePosition.ToString("F6")} -> {edge.End.PlanePosition.ToString("F6")}");
                 }
                 currentNode = currentNode.Next;
             }
@@ -116,32 +114,18 @@ public class DiagonalEdgeGenerator {
         foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
             int comparisonResult = _sortedXPositionEdgeInTree.Comparer.Compare(tmpSearchKey, edge);
 
-            //Debug.Log($"DiagonalEdgeGenerator: Comparing edge {edge.Start.PlanePosition.ToString("F6")} -> {edge.End.PlanePosition.ToString("F6")} with vertex {vertex.PlanePosition.ToString("F6")}, result: {comparisonResult}");
-
             // 対象の辺が頂点よりも右側にある場合
             if (comparisonResult < 0) {
-
-                Debug.Log($"◆ edge exist rightside");
 
                 // 現在の頂点を含む辺ではない場合
                 if (Math.Abs(edge.Start.PlanePosition.x - vertex.PlanePosition.x) > Epsilon && Math.Abs(edge.End.PlanePosition.x - vertex.PlanePosition.x) > Epsilon) {
                     // 最も左側の辺を更新する
                     mostLeftNeighboringEdge = edge;
-
-                    Debug.Log($"◆ updated");
                 }
             }
         }
-        if (mostLeftNeighboringEdge == null) {
-
-            Debug.Log($"DiagonalEdgeGenerator: ===== vertex {vertex.PlanePosition.ToString("F6")} =====");
-
-            foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
-                Debug.Log($"intersect edge - Start {edge.Start.PlanePosition.ToString("F6")}, End {edge.End.PlanePosition.ToString("F6")}");
-            }
-
+        if (mostLeftNeighboringEdge == null) 
             throw new InvalidOperationException("no neighboring edge found for the vertex.");
-        }
         return mostLeftNeighboringEdge;
     }
 
@@ -169,11 +153,6 @@ public class DiagonalEdgeGenerator {
             foreach (var edge in activeEdges) {
                 _sortedXPositionEdgeInTree.Add(edge, edge);
             }
-
-            Debug.Log($"DiagonalEdgeGenerator: Processing vertex {i} - {currVertex.VertexType}");
-
-            //Debug.Log($"DiagonalEdgeGenerator: Previous edge position - Start {prevEdge.Start.PlanePosition.ToString("F6")}, End {prevEdge.End.PlanePosition.ToString("F6")}");
-            //Debug.Log($"DiagonalEdgeGenerator: Current edge position - Start {currEdge.Start.PlanePosition.ToString("F6")}, End {currEdge.End.PlanePosition.ToString("F6")}");
 
             switch (currVertex.VertexType) {
                 case VertexType.Regular:

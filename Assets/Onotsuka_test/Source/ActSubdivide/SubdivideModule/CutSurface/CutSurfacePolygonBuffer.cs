@@ -75,11 +75,11 @@ public class CutSurfacePolygonBuffer {
         HashSet<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> diagonalSet = diagonalEdgeGenerator.GetDiagonalSet();
 
         _monotoneGeometryPathList = new MonotoneGeometryPathList(_linkedVertexList, diagonalSet);
-        //_monotoneGeometryPathList.MakePolygon(
-        //    _localPlane,
-        //    addCutSurfaceMaterial,
-        //    frontsideMesh,
-        //    backsideMesh
-        //);
+        _monotoneGeometryPathList.MakePolygon(
+            _localPlane,
+            addCutSurfaceMaterial,
+            frontsideMesh,
+            backsideMesh
+        );
     }
 }
