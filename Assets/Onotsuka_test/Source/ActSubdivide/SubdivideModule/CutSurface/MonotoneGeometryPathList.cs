@@ -152,13 +152,10 @@ public class MonotoneGeometryPathList {
         if (!_map.ContainsKey(currVertex)) {
             _map[currVertex] = new List<NonConvexMonotoneCutSurfaceEdge>();
         }
-        if (!_map.ContainsKey(nextVertex)) {
-            _map[nextVertex] = new List<NonConvexMonotoneCutSurfaceEdge>();
-        }
 
         NonConvexMonotoneCutSurfaceEdge edge = new NonConvexMonotoneCutSurfaceEdge(currVertex, nextVertex);
         // 双方向の辺を考慮し、既に存在しないかチェックする
-        if (!_map[currVertex].Any(e => e.Equals(edge) || e.Equals(new NonConvexMonotoneCutSurfaceEdge(nextVertex, currVertex)))) {
+        if (!_map[currVertex].Contains(edge)) {
             _map[currVertex].Add(edge);
         }
     }
