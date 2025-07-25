@@ -121,14 +121,14 @@ public class DiagonalEdgeGenerator {
             // 対象の辺が頂点よりも右側にある場合
             if (comparisonResult < 0) {
 
-                //Debug.Log($"◆ edge exist rightside");
+                Debug.Log($"◆ edge exist rightside");
 
                 // 現在の頂点を含む辺ではない場合
                 if (Math.Abs(edge.Start.PlanePosition.x - vertex.PlanePosition.x) > Epsilon && Math.Abs(edge.End.PlanePosition.x - vertex.PlanePosition.x) > Epsilon) {
                     // 最も左側の辺を更新する
                     mostLeftNeighboringEdge = edge;
 
-                    //Debug.Log($"◆ updated");
+                    Debug.Log($"◆ updated");
                 }
             }
         }

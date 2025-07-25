@@ -40,14 +40,20 @@ public class MonotoneGeometryPathList {
 
         // 元の辺を追加する
         foreach (var linkedVertex in linkedVertexList) {
-            var currentNode = linkedVertex.First;
-            while (currentNode != null && currentNode.Next != null) {
-                AddEdgeToMap(currentNode.Value, linkedVertex.TorusNext(currentNode).Value);
-                AddEdgeToMap(linkedVertex.TorusNext(currentNode).Value, currentNode.Value);
 
-                UpdateMostHighestLowestPosition(currentNode.Value);
-                currentNode = currentNode.Next;
+            if (linkedVertex.First == null)
+                continue;
+
+            var firstNode = linkedVertex.First;
+            var currNode = firstNode;
+
+            do {
+                var nextNode = linkedVertex.TorusNext(currNode);
+                AddEdgeToMap(currNode.Value, nextNode.Value);
+                UpdateMostHighestLowestPosition(currNode.Value);
+                currNode = nextNode;
             }
+            while (!currNode.Equals(linkedVertex.First));
         }
 
         // 対角線を追加する
@@ -57,82 +63,63 @@ public class MonotoneGeometryPathList {
         }
 
         // パス探索で訪問済みの辺を追跡するための集合
-        HashSet<NonConvexMonotoneCutSurfaceEdge> visitedEdges = new();
+        HashSet<NonConvexMonotoneCutSurfaceEdge> visitedEdgeSet = new();
 
-        foreach (var startVertex in _map.Keys) {
+        foreach (var keyVertex in _map.Keys) {
 
             // 未訪問の頂点を始点とする辺から新しいパスを探索する
-            foreach (var initialEdge in _map[startVertex]) {
+            foreach (var currEdge in _map[keyVertex]) {
 
                 // 既に訪問済みの辺はスキップする
-                if (visitedEdges.Contains(initialEdge))
+                if (visitedEdgeSet.Contains(currEdge))
                     continue;
 
                 // 新しいパスの探索用
-                MonotoneGeometryPath currentPath = new();
-                NonConvexMonotoneCutSurfaceVertex current = initialEdge.Start;
-                NonConvexMonotoneCutSurfaceVertex previous = null;
+                int limit = 0;
+
+                bool isClosedPath = false;
+                MonotoneGeometryPath currPath = new();
+                NonConvexMonotoneCutSurfaceVertex startVertex = currEdge.Start;
+                NonConvexMonotoneCutSurfaceVertex currVertex = currEdge.Start;
+                NonConvexMonotoneCutSurfaceVertex prevVertex = null;
 
                 // パスの構築を始める最初の連結頂点を追加する
-                currentPath.AddLast(initialEdge.Start);
-                currentPath.AddLast(initialEdge.End);
-                visitedEdges.Add(initialEdge);
+                currPath.AddLast(currEdge.Start);
+                currPath.AddLast(currEdge.End);
+                visitedEdgeSet.Add(currEdge);
 
-                current = initialEdge.End;
-                previous = initialEdge.Start;
+                currVertex = currEdge.End;
+                prevVertex = currEdge.Start;
 
                 // パスの走査を開始する
-                while (current != null && !current.Equals(initialEdge.Start)) {
+                while (!isClosedPath || limit < 2000) {
+                    limit++;
 
-                    bool foundNext = false;
-                    if (!_map.ContainsKey(current))
+                    if (!_map.ContainsKey(currVertex))
                         break;
 
-                    foreach (var nextEdge in _map[current]) {
-                        var nextVertex = nextEdge.Start.Equals(current) ? nextEdge.End : nextEdge.Start;
+                    foreach (var nextEdge in _map[currVertex]) {
+                        // 直前の頂点に戻る辺 (頂点)、または既に使われた辺 (頂点) ではない，接続する頂点であれば更新する
+                        if (nextEdge.Start.Equals(currVertex) && !nextEdge.End.Equals(prevVertex) && !visitedEdgeSet.Contains(nextEdge)) {
 
-                        // 直前の頂点に戻る辺 (頂点)、または既に使われた辺 (頂点) はスキップ
-                        if (nextVertex.Equals(previous) || visitedEdges.Contains(nextEdge) || visitedEdges.Contains(nextEdge.GetReverseEdge())) {
-                            continue;
-                        }
-
-                        // パスがループしたかチェックする (始点が重複したタイミングで発火する)
-                        if (currentPath.Contains(nextVertex)) {
-
-                            if (nextVertex.Equals(initialEdge.Start)) {
-                                foundNext = true;
-                                break;
+                            if (nextEdge.End.Equals(startVertex)) {
+                                isClosedPath = true;
+                                Debug.Log($"MonotoneGeometryPathList: Closed path found starting from {startVertex.PlanePosition}.");
                             }
-                            // 始点に戻る閉パスではないが，閉じたパスをキャッチする
-                            continue;
+
+                            visitedEdgeSet.Add(nextEdge);
+                            currPath.AddLast(nextEdge.End);
+
+                            currVertex = nextEdge.End;
+                            prevVertex = nextEdge.Start;
+                            break;
                         }
-
-                        // 新しい頂点をパスに追加する
-                        currentPath.AddLast(nextVertex);
-                        visitedEdges.Add(nextEdge);
-
-                        // 走査用情報を更新する
-                        previous = current;
-                        current = nextVertex;
-                        foundNext = true;
-                        break;
-                    }
-
-                    // 走査によってパスが閉じなかった場合は警告処理を行う
-                    if (!foundNext) {
-                        Debug.LogWarning($"MonotoneGeometryPathList: No next vertex found for current vertex {current.PlanePosition}. Path may be incomplete.");
                     }
                 }
 
                 // パスの最終チェックを行い，パスリストに閉パスを追加する
-                if (current != null && current.Equals(initialEdge.Start) && currentPath.Count > 2) {
-
-                    MonotoneGeometryPath newPath = new();
-
-                    foreach (var vertex in currentPath) {
-                        newPath.AddLast(vertex);
-                    }
-                    _pathList.Add(newPath);
+                if (currVertex != null && currPath.Count > 2) {
+                    _pathList.Add(currPath);
                 }
             }
         }
