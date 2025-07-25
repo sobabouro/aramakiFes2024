@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+
+/// <summary>
+/// 切断平面上の y 単調な多角形 (閉パス) のリストを管理するクラス
+/// </summary>
 public class MonotoneGeometryPathList {
 
     /// <summary>
