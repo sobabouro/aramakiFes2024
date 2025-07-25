@@ -65,17 +65,6 @@ public class CutSurfacePolygonBuffer {
         MeshContainer backsideMesh, 
         bool addCutSurfaceMaterial = false
     ) {
-        MakeMonotoneGeometry();
-
-        //_linkedMonotoneGeometryVertexList.MakePolygon(
-        //    _localPlane,
-        //    frontsideMesh,
-        //    backsideMesh,
-        //    addCutSurfaceMaterial
-        //);
-    }
-
-    public void MakeMonotoneGeometry() {
         if (_linkedVertexList.Count == 0) {
             Debug.LogWarning("CutSurfacePolygonBuffer: No vertices to process.");
             return;
@@ -86,5 +75,11 @@ public class CutSurfacePolygonBuffer {
         HashSet<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> diagonalSet = diagonalEdgeGenerator.GetDiagonalSet();
 
         _monotoneGeometryPathList = new MonotoneGeometryPathList(_linkedVertexList, diagonalSet);
+        //_monotoneGeometryPathList.MakePolygon(
+        //    _localPlane,
+        //    addCutSurfaceMaterial,
+        //    frontsideMesh,
+        //    backsideMesh
+        //);
     }
 }

@@ -128,7 +128,7 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     public void MakePolygon(
         BoundingBox boundingBox,
         Plane localPlane,
-        bool addCutSurfaceMaterial = false, 
+        bool addCutSurfaceMaterial, 
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh
     ) {
