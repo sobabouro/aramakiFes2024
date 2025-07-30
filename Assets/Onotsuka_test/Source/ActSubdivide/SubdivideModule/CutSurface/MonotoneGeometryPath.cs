@@ -159,13 +159,13 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
         stack.Push(sortedArray[0]);
         stack.Push(sortedArray[1]);
 
-        for (int i = 2; i < sortedArray.Length; i++) {
+        for (int i = 2; i < sortedArray.Length - 1; i++) {
 
             if (stack.Peek().SideType != sortedArray[i].SideType) {
-                while (stack.Count > 0) {
+                while (stack.Count >= 2) {
 
                     var point1 = stack.Pop();
-                    var point2 = stack.Count > 0 ? stack.Pop() : stack.Peek();
+                    var point2 = stack.Count >= 2 ? stack.Peek() : stack.Pop();
 
                     CreateTriangle(
                         (point1, point2, sortedArray[i]),
@@ -178,51 +178,42 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
                 }
                 stack.Push(sortedArray[i - 1]);
                 stack.Push(sortedArray[i]);
-            } else {
+            } 
+            else {
                 bool isContinue = true;
 
-                while (stack.Count > 0 && isContinue) {
-                    isContinue = false;
-
+                while (stack.Count >= 2 && isContinue) {
                     var point1 = stack.Pop();
-                    var point2 = stack.Count > 0 ? stack.Peek() : stack.Pop();
+                    var point2 = stack.Peek();
 
                     // 左側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に時計回りに並ぶ場合) 
-                    if (sortedArray[i].SideType == SideType.Left && Calculation.IsClockwise(sortedArray[i].PlanePosition, point2.PlanePosition, point1.PlanePosition)) {
+                    if (sortedArray[i].SideType == SideType.Left && Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
                         CreateTriangle(
-                            (sortedArray[i], point2, point1),
+                            (point1, point2, sortedArray[i]),
                             boundingBox,
                             localPlane,
                             frontsideMesh,
                             backsideMesh,
                             addCutSurfaceMaterial
                         );
-                        if (stack.Count == 0)
-                            stack.Push(point2);
-                        stack.Push(sortedArray[i]);
-
                         isContinue = true;
                     }
-                    // 右側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に時計回りに並ぶ場合)
-                    else if (sortedArray[i].SideType == SideType.Right && Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
+                    // 右側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に反時計回りに並ぶ場合)
+                    else if (sortedArray[i].SideType == SideType.Right && !Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
                         CreateTriangle(
-                            (point1, sortedArray[i], point2),
+                            (point1, point2, sortedArray[i]),
                             boundingBox,
                             localPlane,
                             frontsideMesh,
                             backsideMesh,
                             addCutSurfaceMaterial
                         );
-                        if (stack.Count == 0)
-                            stack.Push(point2);
-                        stack.Push(sortedArray[i]);
-
                         isContinue = true;
                     }
                     // 図形内部に対角線が引けない場合 (辺が反っていて，辺を弓とすると対角線が弦となる形で図形の外部に結ばれてしまう)
                     else {
-                        if (stack.Count == 0)
-                            stack.Push(point2);
+                        isContinue = false;
+
                         stack.Push(point1);
                         stack.Push(sortedArray[i]);
                     }
@@ -268,7 +259,7 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
             .ToArray();
 
         for (int i = 0; i < sortedArray.Length; i++) {
-            Debug.Log($"Sorted Vertex {i}: Position = {sortedArray[i].PlanePosition}, SideType = {sortedArray[i].SideType}");
+            Debug.Log($"MonotoneGeometryPath: Sorted Vertex {i}- Position = {sortedArray[i].PlanePosition}, SideType = {sortedArray[i].SideType}");
         }
 
         return sortedArray;
