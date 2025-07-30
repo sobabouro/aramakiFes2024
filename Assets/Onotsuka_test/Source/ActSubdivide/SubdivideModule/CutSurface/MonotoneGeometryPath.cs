@@ -311,16 +311,16 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
 
         frontsideMesh.AddMesh(
             materialIndex,
-            triangleNormal,
+            - localPlane.normal,
             new Vector3[] { vertex1, vertex2, vertex3 },
             new Vector3[] { localPlane.normal, localPlane.normal, localPlane.normal },
             new Vector2[] { uv1, uv2, uv3 }
         );
         backsideMesh.AddMesh(
             materialIndex,
-            triangleNormal,
+            localPlane.normal,
             new Vector3[] { vertex1, vertex3, vertex2 },
-            new Vector3[] { -localPlane.normal, -localPlane.normal, -localPlane.normal },
+            new Vector3[] { localPlane.normal, localPlane.normal, localPlane.normal },
             new Vector2[] { uv1, uv3, uv2 }
         );
     }

@@ -123,9 +123,7 @@ public class MeshContainer {
         Vector2[] newUVs
     ) {
         int indexCount = Vertices.Count;
-        int sequence1 = 0;
-        int sequence2 = 1;
-        int sequence3 = 2;
+        int[] sequence = new int[] { 0, 1, 2 };
 
         Vector3 calNormal = Vector3.Cross(
             newVertices[1] - newVertices[0],
@@ -133,28 +131,28 @@ public class MeshContainer {
         ).normalized;
 
         if (Vector3.Dot(calNormal, face) < 0) {
-            sequence1 = 2;
-            sequence2 = 1;
-            sequence3 = 0;
+            sequence[0] = 2;
+            sequence[1] = 1;
+            sequence[2] = 0;
         }
 
         for (int i = 0; i < 3; i++) {
             Submesh[submeshDepartment].Add(indexCount + i);
         }
         Vertices.AddRange(new Vector3[] {
-                newVertices[sequence1],
-                newVertices[sequence2],
-                newVertices[sequence3]
+                newVertices[sequence[0]],
+                newVertices[sequence[1]],
+                newVertices[sequence[2]]
             });
         Normals.AddRange(new Vector3[] {
-                newNormals[sequence1],
-                newNormals[sequence2],
-                newNormals[sequence3]
+                newNormals[sequence[0]],
+                newNormals[sequence[1]],
+                newNormals[sequence[2]]
             });
         UVs.AddRange(new Vector2[] {
-                newUVs[sequence1],
-                newUVs[sequence2],
-                newUVs[sequence3]
+                newUVs[sequence[0]],
+                newUVs[sequence[1]],
+                newUVs[sequence[2]]
             });
     }
 
