@@ -181,10 +181,19 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
             } 
             else {
                 bool isContinue = true;
+                bool isLastElement = false;
+                NonConvexMonotoneCutSurfaceVertex point1 = null, point2 = null;
 
                 while (stack.Count >= 2 && isContinue) {
-                    var point1 = stack.Pop();
-                    var point2 = stack.Peek();
+                    point1 = stack.Pop();
+
+                    if (stack.Count >= 2) {
+                        point2 = stack.Peek();
+                    } 
+                    else {
+                        point2 = stack.Pop();
+                        isLastElement = true;
+                    }
 
                     // 左側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に時計回りに並ぶ場合) 
                     if (sortedArray[i].SideType == SideType.Left && Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
@@ -213,11 +222,19 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
                     // 図形内部に対角線が引けない場合 (辺が反っていて，辺を弓とすると対角線が弦となる形で図形の外部に結ばれてしまう)
                     else {
                         isContinue = false;
-
-                        stack.Push(point1);
-                        stack.Push(sortedArray[i]);
                     }
+                    
                 }
+                if (isLastElement && point2 != null) {
+                    stack.Push(point2);
+                } 
+                else if (!isLastElement && point1 != null) {
+                    stack.Push(point1);
+                } 
+                else {
+                    Debug.LogError("MonotoneGeometryPath: Stack is empty or has no valid points to push.");
+                }
+                stack.Push(sortedArray[i]);
             }
         }
     }
