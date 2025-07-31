@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using CalculationUtils;
+using System.Net;
 
 /// <summary>
 /// 切断平面上の y 単調な多角形のパスを管理するクラス
@@ -58,17 +59,20 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     public void AddFirst(NonConvexMonotoneCutSurfaceVertex vertex) {
         _path.AddFirst(vertex);
 
-        if (vertex.PlanePosition.y >= _mostHighestYPosition) {
-            if (vertex.PlanePosition.y == _mostHighestYPosition && vertex.PlanePosition.x < _mostHighestNode.Value.PlanePosition.x) {
-                _mostHighestNode = _path.First;
-            }
+        if (
+            vertex.PlanePosition.y > _mostHighestYPosition ||
+            (vertex.PlanePosition.y == _mostHighestYPosition &&
+             vertex.PlanePosition.x <= _mostHighestNode.Value.PlanePosition.x)
+        ) {
             _mostHighestYPosition = vertex.PlanePosition.y;
             _mostHighestNode = _path.First;
         }
-        if (vertex.PlanePosition.y <= _mostLowestYPosition) {
-            if (vertex.PlanePosition.y == _mostLowestYPosition && vertex.PlanePosition.x > _mostLowestNode.Value.PlanePosition.x) {
-                _mostLowestNode = _path.First;
-            }
+
+        if (
+            vertex.PlanePosition.y < _mostLowestYPosition ||
+            (vertex.PlanePosition.y == _mostLowestYPosition &&
+             vertex.PlanePosition.x >= _mostLowestNode.Value.PlanePosition.x)
+        ) {
             _mostLowestYPosition = vertex.PlanePosition.y;
             _mostLowestNode = _path.First;
         }
@@ -81,17 +85,20 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     public void AddLast(NonConvexMonotoneCutSurfaceVertex vertex) {
         _path.AddLast(vertex);
 
-        if (vertex.PlanePosition.y >= _mostHighestYPosition) {
-            if (vertex.PlanePosition.y == _mostHighestYPosition && vertex.PlanePosition.x < _mostHighestNode.Value.PlanePosition.x) {
-                _mostHighestNode = _path.Last;
-            }
+        if (
+            vertex.PlanePosition.y > _mostHighestYPosition ||
+            (vertex.PlanePosition.y == _mostHighestYPosition &&
+             vertex.PlanePosition.x <= _mostHighestNode.Value.PlanePosition.x)
+        ) {
             _mostHighestYPosition = vertex.PlanePosition.y;
             _mostHighestNode = _path.Last;
         }
-        if (vertex.PlanePosition.y <= _mostLowestYPosition) {
-            if (vertex.PlanePosition.y == _mostLowestYPosition && vertex.PlanePosition.x > _mostLowestNode.Value.PlanePosition.x) {
-                _mostLowestNode = _path.Last;
-            }
+
+        if (
+            vertex.PlanePosition.y < _mostLowestYPosition ||
+            (vertex.PlanePosition.y == _mostLowestYPosition &&
+             vertex.PlanePosition.x >= _mostLowestNode.Value.PlanePosition.x)
+        ) {
             _mostLowestYPosition = vertex.PlanePosition.y;
             _mostLowestNode = _path.Last;
         }
@@ -241,28 +248,46 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
 
     /// <summary>
     /// 連結図形辺シーケンスの各頂点に対して，その頂点が属する図形の y 最大地点と最小地点までを結ぶ二つの境界のうち，どちら側に位置するかを設定するメソッド
+    /// 辺が図形を反時計回りで進む向きで格納されていることが前提である
     /// </summary>
     private void ClusteringSideType() {
 
-        var currentNode = _mostHighestNode;
-        currentNode.Value.SideType = SideType.Top;
+        //var currentNode = _mostHighestNode;
+        //currentNode.Value.SideType = SideType.Top;
 
-        currentNode = TorusNext(currentNode);
+        //currentNode = TorusNext(currentNode);
 
-        while (currentNode != _mostLowestNode) {
-            currentNode.Value.SideType = SideType.Left;
+        //while (currentNode != _mostLowestNode) {
+        //    currentNode.Value.SideType = SideType.Left;
 
-            currentNode = TorusNext(currentNode);
+        //    currentNode = TorusNext(currentNode);
+        //}
+        //currentNode.Value.SideType = SideType.Bottom;
+
+        //currentNode = TorusNext(currentNode);
+
+        //while (currentNode != _mostHighestNode) {
+        //    currentNode.Value.SideType = SideType.Right;
+
+        //    currentNode = TorusNext(currentNode);
+        //}
+
+        var currNode = _mostHighestNode;
+
+        while (currNode != _mostLowestNode) {
+            currNode = TorusNext(currNode);
+            currNode.Value.SideType = SideType.Left;
         }
-        currentNode.Value.SideType = SideType.Bottom;
 
-        currentNode = TorusNext(currentNode);
+        currNode = _mostLowestNode;
 
-        while (currentNode != _mostHighestNode) {
-            currentNode.Value.SideType = SideType.Right;
-
-            currentNode = TorusNext(currentNode);
+        while (currNode != _mostHighestNode) {
+            currNode.Value.SideType = SideType.Right;
+            currNode = TorusNext(currNode);
         }
+
+        _mostHighestNode.Value.SideType = SideType.Top;
+        _mostLowestNode.Value.SideType = SideType.Bottom;
     }
 
     /// <summary>

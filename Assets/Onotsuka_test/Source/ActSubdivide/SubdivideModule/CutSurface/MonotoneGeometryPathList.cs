@@ -98,8 +98,12 @@ public class MonotoneGeometryPathList {
                 prevVertex = currEdge.Start;
 
                 // パスの走査を開始する
-                while (!isClosedPath || limit < 2000) {
+                while (!isClosedPath) {
                     limit++;
+                    if (limit > 1000) {
+                        Debug.LogWarning($"MonotoneGeometryPathList: Path search limit exceeded for vertex {startVertex.PlanePosition}. Possible infinite loop detected.");
+                        break;
+                    }
 
                     if (!_map.ContainsKey(currVertex))
                         break;
