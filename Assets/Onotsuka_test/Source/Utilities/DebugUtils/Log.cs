@@ -11,7 +11,7 @@ namespace DebugUtils {
     /// </summary>
     public class Log {
 
-        public void PrintCollection<T>(IEnumerable<T> collection, string field) {
+        public static void PrintCollection<T>(IEnumerable<T> collection, string field) {
             if (collection == null) {
                 Debug.Log("Collection is null");
                 return;
