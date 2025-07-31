@@ -97,6 +97,15 @@ public class DiagonalEdgeGenerator {
             _edgeList.Add(edges);
         }
         _indexBeforeSortY = linkedVertexList.GetAllIndexSortedPlanePositionY();
+        foreach (var _index in _indexBeforeSortY) {
+            Debug.Log($"row: {_index.Item1}, col: {_index.Item2}");
+        }
+        Debug.Log($"======== edge list count is {_edgeList.Count}========");
+        for (int i = 0; i < _edgeList.Count; i++) {
+            for (int j = 0; j < _edgeList[i].Count; j++) {
+                Debug.Log($"Edge[{i}][{j}]: [{(_edgeList[i][j].Start.PlanePosition, _edgeList[i][j].End.PlanePosition)}]");
+            }
+        }
     }
 
     /// <summary>
@@ -139,6 +148,8 @@ public class DiagonalEdgeGenerator {
 
         for (int i = 0; i < _indexBeforeSortY.Length; i++) {
 
+            Debug.Log($"Processing vertex at index: {_indexBeforeSortY[i].Item1}, {_indexBeforeSortY[i].Item2}");
+
             var currVertex = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2].Start;
             var currEdge = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2];
             var prevEdge = _indexBeforeSortY[i].Item2 > 0
@@ -151,6 +162,9 @@ public class DiagonalEdgeGenerator {
             var activeEdges = _edgeIntervalTree.GetEdgesPassThroughHorizon(currVertex.PlanePosition.y);
 
             foreach (var edge in activeEdges) {
+
+                Debug.Log($"Adding edge to sorted list: hash - [{edge.GetHashCode()}], [{edge.Start.PlanePosition}] -> [{edge.End.PlanePosition}]");
+
                 _sortedXPositionEdgeInTree.Add(edge, edge);
             }
 

@@ -273,6 +273,7 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
 
         NonConvexMonotoneCutSurfaceVertex[] sortedArray = _path
             .OrderByDescending(vertex => vertex.PlanePosition.y)
+            .ThenBy(vertex => vertex.PlanePosition.x)
             .ToArray();
 
         for (int i = 0; i < sortedArray.Length; i++) {
