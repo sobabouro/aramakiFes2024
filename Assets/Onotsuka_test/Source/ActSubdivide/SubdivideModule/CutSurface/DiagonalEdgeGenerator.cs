@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
+using DebugUtils;
 
 public class DiagonalEdgeGenerator {
 
@@ -48,6 +49,11 @@ public class DiagonalEdgeGenerator {
 
         FormattingData(linkedVertexList);
         ProcessSweepLineForMakeDiagonalEdge(linkedVertexList);
+
+        Debug.Log($"DiagonalEdgeGenerator: diagonal count [{_diagonalSet.Count}]");
+        //foreach (var diagonal in _diagonalSet) {
+        //    Debug.Log($"Diagonal: {diagonal.Item1.VertexType} - {diagonal.Item1.PlanePosition} -> {diagonal.Item2.VertexType} - {diagonal.Item2.PlanePosition}");
+        //}
     }
 
     /// <summary>
@@ -97,13 +103,10 @@ public class DiagonalEdgeGenerator {
             _edgeList.Add(edges);
         }
         _indexBeforeSortY = linkedVertexList.GetAllIndexSortedPlanePositionY();
-        foreach (var _index in _indexBeforeSortY) {
-            Debug.Log($"row: {_index.Item1}, col: {_index.Item2}");
-        }
-        Debug.Log($"======== edge list count is {_edgeList.Count}========");
+
         for (int i = 0; i < _edgeList.Count; i++) {
             for (int j = 0; j < _edgeList[i].Count; j++) {
-                Debug.Log($"Edge[{i}][{j}]: [{(_edgeList[i][j].Start.PlanePosition, _edgeList[i][j].End.PlanePosition)}]");
+                Debug.Log($"Edge[{i}][{j}]: {_edgeList[i][j].Start.VertexType} - {_edgeList[i][j].Start.PlanePosition} ,  {_edgeList[i][j].End.VertexType} - {_edgeList[i][j].End.PlanePosition}");
             }
         }
     }
@@ -119,22 +122,32 @@ public class DiagonalEdgeGenerator {
 
         NonConvexMonotoneCutSurfaceEdge tmpSearchKey = new(vertex, vertex);
         NonConvexMonotoneCutSurfaceEdge? mostLeftNeighboringEdge = null;
+        bool isRegularType = vertex.VertexType == VertexType.Regular;
 
         foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
             int comparisonResult = _sortedXPositionEdgeInTree.Comparer.Compare(tmpSearchKey, edge);
 
-            // 対象の辺が頂点よりも右側にある場合
-            if (comparisonResult < 0) {
+            // 辺が対象頂点よりも左側にある場合
+            if (comparisonResult > 0) {
 
-                // 現在の頂点を含む辺ではない場合
-                if (Math.Abs(edge.Start.PlanePosition.x - vertex.PlanePosition.x) > Epsilon && Math.Abs(edge.End.PlanePosition.x - vertex.PlanePosition.x) > Epsilon) {
-                    // 最も左側の辺を更新する
+                // 条件1. 対象頂点を含む辺ではない
+                bool isNotContainsVertex = !edge.Start.Equals(vertex) && !edge.End.Equals(vertex);
+                // 条件2. 対象頂点に暫定解より近い
+                bool isMoreCloser = mostLeftNeighboringEdge == null 
+                    ? true 
+                    : mostLeftNeighboringEdge.GetXPositionIntersectionWithHorizon(EdgeComparer.HorizonY) <
+                      edge.GetXPositionIntersectionWithHorizon(EdgeComparer.HorizonY);
+                // 条件3. 通常点以外であれば，MinY < y < MaxY を満たしているもののみが対象である
+                if (!isRegularType)
+                    isMoreCloser = isMoreCloser && edge.MinY < EdgeComparer.HorizonY && EdgeComparer.HorizonY < edge.MaxY;
+
+                // 条件を満たす場合、最も左側の辺を更新する
+                if (isNotContainsVertex && isMoreCloser)
                     mostLeftNeighboringEdge = edge;
-                }
             }
         }
-        if (mostLeftNeighboringEdge == null) 
-            throw new InvalidOperationException("no neighboring edge found for the vertex.");
+        //if (mostLeftNeighboringEdge == null) 
+        //    throw new InvalidOperationException("no neighboring edge found for the vertex.");
         return mostLeftNeighboringEdge;
     }
 
@@ -148,13 +161,14 @@ public class DiagonalEdgeGenerator {
 
         for (int i = 0; i < _indexBeforeSortY.Length; i++) {
 
-            Debug.Log($"Processing vertex at index: {_indexBeforeSortY[i].Item1}, {_indexBeforeSortY[i].Item2}");
-
             var currVertex = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2].Start;
             var currEdge = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2];
             var prevEdge = _indexBeforeSortY[i].Item2 > 0
                 ? _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2 - 1]
                 : _edgeList[_indexBeforeSortY[i].Item1][_edgeList[_indexBeforeSortY[i].Item1].Count - 1];
+
+
+            Debug.Log($"Processing vertex at index: [{_indexBeforeSortY[i].Item1}, {_indexBeforeSortY[i].Item2}] type [{currVertex.VertexType}]");
 
             // 走査線の y 座標を設定する
             EdgeComparer.HorizonY = currVertex.PlanePosition.y;
@@ -162,24 +176,21 @@ public class DiagonalEdgeGenerator {
             var activeEdges = _edgeIntervalTree.GetEdgesPassThroughHorizon(currVertex.PlanePosition.y);
 
             foreach (var edge in activeEdges) {
-
-                Debug.Log($"Adding edge to sorted list: hash - [{edge.GetHashCode()}], [{edge.Start.PlanePosition}] -> [{edge.End.PlanePosition}]");
-
                 _sortedXPositionEdgeInTree.Add(edge, edge);
             }
 
             switch (currVertex.VertexType) {
-                case VertexType.Regular:
-                    HandleRegularVertex(currVertex, currEdge, prevEdge);
-                    break;
                 case VertexType.Start:
                     HandleStartVertex(currVertex, currEdge);
                     break;
-                case VertexType.Merge:
-                    HandleMergeVertex(currVertex, prevEdge);
-                    break;
                 case VertexType.Split:
                     HandleSplitVertex(currVertex, currEdge);
+                    break;
+                case VertexType.Regular:
+                    HandleRegularVertex(currVertex, currEdge, prevEdge);
+                    break;
+                case VertexType.Merge:
+                    HandleMergeVertex(currVertex, prevEdge);
                     break;
                 case VertexType.End:
                     HandleEndVertex(currVertex, prevEdge);
@@ -187,6 +198,52 @@ public class DiagonalEdgeGenerator {
             }
             _sortedXPositionEdgeInTree.Clear();
         }
+    }
+
+    /// <summary>
+    /// イベントポイントが開始点 (Start) の場合の処理メソッド
+    /// </summary>
+    /// <param name="currVertex"> v[i] </param>
+    /// <param name="currEdge"> e[i] </param>
+    private void HandleStartVertex(
+        NonConvexMonotoneCutSurfaceVertex currVertex,
+        NonConvexMonotoneCutSurfaceEdge currEdge
+    ) {
+        /**
+         * e[i] を T に挿入し，helper(e[i]) を v[i] とする
+         */
+        _edgeIntervalTree.AddEdge(currEdge);
+        currEdge.Helper = currVertex;
+    }
+
+    /// <summary>
+    /// イベントポイントが分離点 (Split) の場合の処理メソッド
+    /// </summary>
+    /// <param name="currVertex"> v[i] </param>
+    /// <param name="currEdge"> e[i] </param>
+    private void HandleSplitVertex(
+        NonConvexMonotoneCutSurfaceVertex currVertex,
+        NonConvexMonotoneCutSurfaceEdge currEdge
+    ) {
+        /**
+         * T の中を探索して，v[i] のすぐ左にある辺 e[j] を求める
+         * v[i] と helper(e[j]) を結ぶ対角線を D に挿入する
+         * helper(e[j]) を v[i] にする
+         * e[i] を T に挿入し，helper(e[i]) を v[i] とする
+         */
+        var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
+
+        Debug.Log($"Spilit(): すぐ左の辺 e[j]: {mostLeftNeighboringEdge.Start.PlanePosition}, {mostLeftNeighboringEdge.End.PlanePosition} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
+
+        AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
+        mostLeftNeighboringEdge.Helper = currVertex;
+
+        Debug.Log($"Spilit(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.PlanePosition}");
+
+        _edgeIntervalTree.AddEdge(currEdge);
+        currEdge.Helper = currVertex;
+
+        Debug.Log($"Spilit(): helper(e[i]) を v[i] にした: {currEdge.Helper.PlanePosition}");
     }
 
     /// <summary>
@@ -212,37 +269,43 @@ public class DiagonalEdgeGenerator {
          * - - helper(e[j]) を v[i] にする
          */
 
-        if (currEdge.Start.PlanePosition.y < currEdge.End.PlanePosition.y)
+        if (hasSolidInRightSide(currEdge)) {
+
+            Debug.Log($"Regular(): 頂点 {currVertex.PlanePosition} の右側に P の内部がねい");
+
             return;
+        }
+
+        Debug.Log($"Regular(): 頂点 {currVertex.PlanePosition} の右側に P の内部がある");
+
         if (prevEdge.Helper?.VertexType == VertexType.Merge) {
+
+            Debug.Log($"Regular(): helper(e[i-1]) が統合点である");
+
             _diagonalSet.Add((currVertex, prevEdge.Helper));
             _edgeIntervalTree.RemoveEdge(prevEdge);
             _edgeIntervalTree.AddEdge(currEdge);
             currEdge.Helper = currVertex;
         } 
         else {
+            Debug.Log($"Regular(): helper(e[i-1]) が統合点じゃない");
+
             var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
+
+            if (mostLeftNeighboringEdge == null) {
+                Debug.Log($"Regular(): すぐ左の辺が見つからない: v[i] = {currVertex.PlanePosition}");
+                return;
+            }
+
+            Debug.Log($"Regular(): すぐ左の辺 e[j]: {mostLeftNeighboringEdge.Start.PlanePosition}, {mostLeftNeighboringEdge.End.PlanePosition} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
+
             if (mostLeftNeighboringEdge.Helper?.VertexType == VertexType.Merge) {
                 AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
             }
             mostLeftNeighboringEdge.Helper = currVertex;
-        }
-    }
 
-    /// <summary>
-    /// イベントポイントが開始点 (Start) の場合の処理メソッド
-    /// </summary>
-    /// <param name="currVertex"> v[i] </param>
-    /// <param name="currEdge"> e[i] </param>
-    private void HandleStartVertex(
-        NonConvexMonotoneCutSurfaceVertex currVertex,
-        NonConvexMonotoneCutSurfaceEdge currEdge
-    ) {
-        /**
-         * e[i] を T に挿入し，helper(e[i]) を v[i] とする
-         */
-        _edgeIntervalTree.AddEdge(currEdge);
-        currEdge.Helper = currVertex;
+            Debug.Log($"Regular(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.PlanePosition}");
+        }
     }
 
     /// <summary>
@@ -264,36 +327,22 @@ public class DiagonalEdgeGenerator {
          * helper(e[j]) を v[i] にする
          */
         if (prevEdge.Helper?.VertexType == VertexType.Merge) {
+
+            Debug.Log($"Merge(): helper(e[i-1]) が統合点である");
+
             AddDiagonalEdge(currVertex, prevEdge.Helper);
         }
         _edgeIntervalTree.RemoveEdge(prevEdge);
         var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
+
+        Debug.Log($"Merge(): すぐ左の辺 e[j]: {mostLeftNeighboringEdge.Start.PlanePosition}, {mostLeftNeighboringEdge.End.PlanePosition} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
+
         if (mostLeftNeighboringEdge.Helper?.VertexType == VertexType.Merge) {
             AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
         }
         mostLeftNeighboringEdge.Helper = currVertex;
-    }
 
-    /// <summary>
-    /// イベントポイントが分離点 (Split) の場合の処理メソッド
-    /// </summary>
-    /// <param name="currVertex"> v[i] </param>
-    /// <param name="currEdge"> e[i] </param>
-    private void HandleSplitVertex(
-        NonConvexMonotoneCutSurfaceVertex currVertex,
-        NonConvexMonotoneCutSurfaceEdge currEdge
-    ) {
-        /**
-         * T の中を探索して，v[i] のすぐ左にある辺 e[j] を求める
-         * v[i] と helper(e[j]) を結ぶ対角線を D に挿入する
-         * helper(e[j]) を v[i] にする
-         * e[i] を T に挿入し，helper(e[i]) を v[i] とする
-         */
-        var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
-        AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
-        mostLeftNeighboringEdge.Helper = currVertex;
-        _edgeIntervalTree.AddEdge(currEdge);
-        currEdge.Helper = currVertex;
+        Debug.Log($"Merge(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.PlanePosition}");
     }
 
     /// <summary>
@@ -314,6 +363,29 @@ public class DiagonalEdgeGenerator {
             AddDiagonalEdge(currVertex, prevEdge.Helper);
         }
         _edgeIntervalTree.RemoveEdge(prevEdge);
+    }
+
+    /// <summary>
+    /// 右側に図形の内部があるかどうかを判定するメソッド
+    /// </summary>
+    /// <param name="edge"> 判定対象の辺 </param>
+    /// <returns> 辺の右側に図形の内部があれば true, 無ければ false を返す </returns>
+    private bool hasSolidInRightSide(NonConvexMonotoneCutSurfaceEdge edge) {
+        bool hasSolid = false;
+
+        if (edge.Start.PlanePosition.y < edge.End.PlanePosition.y)
+            hasSolid = false;
+        else if (edge.Start.PlanePosition.y > edge.End.PlanePosition.y)
+            hasSolid = true;
+        else {
+            if (edge.Start.PlanePosition.x < edge.End.PlanePosition.x)
+                hasSolid = false;
+            else if (edge.Start.PlanePosition.x > edge.End.PlanePosition.x)
+                hasSolid = true;
+            else
+                Debug.LogError($"DiagonalEdgeGenerator: hasSolidInRightSide() - edge position of edge are equal{edge.Start.PlanePosition}, {edge.End.PlanePosition}");
+        }
+        return hasSolid;
     }
 
     /// <summary>
