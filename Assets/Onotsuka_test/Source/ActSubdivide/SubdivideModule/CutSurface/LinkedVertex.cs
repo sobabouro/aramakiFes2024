@@ -100,11 +100,13 @@ public class LinkedVertex : AbstractNodeSequence<NonConvexMonotoneCutSurfaceVert
             currVertex.VertexType = Calculation.IsClockwise(prevVertex.PlanePosition, currVertex.PlanePosition, nextVertex.PlanePosition)
                 ? VertexType.Split
                 : VertexType.Start;
-        } else if (currY <= prevY && currY < nextY) {
+        } 
+        else if (currY <= prevY && currY < nextY) {
             currVertex.VertexType = Calculation.IsClockwise(prevVertex.PlanePosition, currVertex.PlanePosition, nextVertex.PlanePosition)
                 ? VertexType.Merge
                 : VertexType.End;
-        } else {
+        } 
+        else {
             currVertex.VertexType = VertexType.Regular;
         }
     }
