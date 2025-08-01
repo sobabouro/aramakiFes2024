@@ -72,7 +72,10 @@ public class EdgeIntervalTree {
 
         foreach (var pair in _edgeMap) {
             var edge = pair.Key;
-            if (y > edge.MinY - Epsilon && y < edge.MaxY + Epsilon) {
+            //if (y > edge.MinY - Epsilon && y < edge.MaxY + Epsilon) {
+            //    result.Add(edge);
+            //}
+            if (y >= edge.MinY && y < edge.MaxY) {
                 result.Add(edge);
             }
         }
