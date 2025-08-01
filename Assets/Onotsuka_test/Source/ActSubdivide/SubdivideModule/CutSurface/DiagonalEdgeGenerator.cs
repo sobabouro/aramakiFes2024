@@ -269,7 +269,7 @@ public class DiagonalEdgeGenerator {
          * - - helper(e[j]) を v[i] にする
          */
 
-        if (hasSolidInRightSide(currEdge)) {
+        if (!hasSolidInRightSide(currEdge)) {
 
             Debug.Log($"Regular(): 頂点 {currVertex.PlanePosition} の右側に P の内部がねい");
 
@@ -282,7 +282,7 @@ public class DiagonalEdgeGenerator {
 
             Debug.Log($"Regular(): helper(e[i-1]) が統合点である");
 
-            _diagonalSet.Add((currVertex, prevEdge.Helper));
+            AddDiagonalEdge(currVertex, prevEdge.Helper);
             _edgeIntervalTree.RemoveEdge(prevEdge);
             _edgeIntervalTree.AddEdge(currEdge);
             currEdge.Helper = currVertex;
@@ -379,9 +379,9 @@ public class DiagonalEdgeGenerator {
             hasSolid = true;
         else {
             if (edge.Start.PlanePosition.x < edge.End.PlanePosition.x)
-                hasSolid = false;
-            else if (edge.Start.PlanePosition.x > edge.End.PlanePosition.x)
                 hasSolid = true;
+            else if (edge.Start.PlanePosition.x > edge.End.PlanePosition.x)
+                hasSolid = false;
             else
                 Debug.LogError($"DiagonalEdgeGenerator: hasSolidInRightSide() - edge position of edge are equal{edge.Start.PlanePosition}, {edge.End.PlanePosition}");
         }

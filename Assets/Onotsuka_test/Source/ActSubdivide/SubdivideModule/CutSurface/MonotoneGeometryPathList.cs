@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using DebugUtils;
 
 
 /// <summary>
@@ -55,6 +56,9 @@ public class MonotoneGeometryPathList {
 
             do {
                 var nextNode = linkedVertex.TorusNext(currNode);
+
+                Debug.Log($"MonotoneGeometryPathList: AddEdgeToMap() edges {currNode.Value.PlanePosition} <-> {nextNode.Value.PlanePosition}.");
+
                 AddEdgeToMap(currNode.Value, nextNode.Value);
                 UpdateMostHighestLowestPosition(currNode.Value);
                 currNode = nextNode;
@@ -64,6 +68,9 @@ public class MonotoneGeometryPathList {
 
         // 対角線を追加する
         foreach (var diagonal in diagonalSet) {
+
+            Debug.Log($"MonotoneGeometryPathList: AddEdgeToMap() Diagonals {diagonal.Item1.PlanePosition} <-> {diagonal.Item2.PlanePosition}.");
+
             AddEdgeToMap(diagonal.Item1, diagonal.Item2);
             AddEdgeToMap(diagonal.Item2, diagonal.Item1);
         }
@@ -130,6 +137,11 @@ public class MonotoneGeometryPathList {
                 // パスの最終チェックを行い，パスリストに閉パスを追加する
                 if (currVertex != null && currPath.Count > 2) {
                     _pathList.Add(currPath);
+
+                    Debug.Log($"MonotoneGeometryPathList: New path added with {currPath.Count} vertices starting from {startVertex.PlanePosition}.");
+                    foreach (var vertex in currPath) {
+                        Debug.Log($"{vertex.PlanePosition}");
+                    }
                 }
             }
         }

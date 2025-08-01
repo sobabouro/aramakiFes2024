@@ -301,10 +301,6 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
             .ThenBy(vertex => vertex.PlanePosition.x)
             .ToArray();
 
-        for (int i = 0; i < sortedArray.Length; i++) {
-            Debug.Log($"MonotoneGeometryPath: Sorted Vertex {i}- Position = {sortedArray[i].PlanePosition}, SideType = {sortedArray[i].SideType}");
-        }
-
         return sortedArray;
     }
 
