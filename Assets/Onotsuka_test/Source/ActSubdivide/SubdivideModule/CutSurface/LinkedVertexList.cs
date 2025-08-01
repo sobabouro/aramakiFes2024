@@ -100,6 +100,7 @@ public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NonConvex
         // y 降順でソート (等しい場合は x 昇順)
         var sorted = indexedList
             .OrderByDescending(item => item.Vertex.PlanePosition.y)
+            .ThenBy(item => item.Vertex.VertexType)
             .ThenBy(item => item.Vertex.PlanePosition.x)
             .ToList();
 
