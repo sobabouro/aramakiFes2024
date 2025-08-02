@@ -161,14 +161,24 @@ public class DiagonalEdgeGenerator {
 
         for (int i = 0; i < _indexBeforeSortY.Length; i++) {
 
+            Debug.Log($"Processing vertex at index: [{_indexBeforeSortY[i].Item1}, {_indexBeforeSortY[i].Item2}]");
+
             var currVertex = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2].Start;
+
+            /*デバッグ用*/
+            currVertex.Address = $"v[{_indexBeforeSortY[i].Item1}, {_indexBeforeSortY[i].Item2}]";
+
             var currEdge = _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2];
+
+            /*デバッグ用*/
+            currEdge.Address = $"e[{_indexBeforeSortY[i].Item1}, {_indexBeforeSortY[i].Item2}]";
+
             var prevEdge = _indexBeforeSortY[i].Item2 > 0
                 ? _edgeList[_indexBeforeSortY[i].Item1][_indexBeforeSortY[i].Item2 - 1]
                 : _edgeList[_indexBeforeSortY[i].Item1][_edgeList[_indexBeforeSortY[i].Item1].Count - 1];
 
 
-            Debug.Log($"Processing vertex at index: [{_indexBeforeSortY[i].Item1}, {_indexBeforeSortY[i].Item2}] type [{currVertex.VertexType}]");
+            Debug.Log($"Processing vertex type: [{_indexBeforeSortY[i].Item1}, {_indexBeforeSortY[i].Item2}] type [{currVertex.VertexType}]");
 
             // 走査線の y 座標を設定する
             EdgeComparer.HorizonY = currVertex.PlanePosition.y;

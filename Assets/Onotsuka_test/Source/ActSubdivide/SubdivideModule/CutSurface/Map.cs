@@ -76,7 +76,7 @@ public class Map {
     /// <summary>
     /// グラフ内のすべての頂点を取得する
     /// </summary>
-    public IEnumerable<NonConvexMonotoneCutSurfaceVertex> GetAllVertices() {
+    public IEnumerable<NonConvexMonotoneCutSurfaceVertex> GetAllKeys() {
         return _map.Keys;
     }
 }

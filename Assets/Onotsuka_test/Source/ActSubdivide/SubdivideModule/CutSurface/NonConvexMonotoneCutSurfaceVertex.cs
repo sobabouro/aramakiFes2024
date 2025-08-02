@@ -3,6 +3,9 @@ using UnityEngine;
 
 public class NonConvexMonotoneCutSurfaceVertex : AbstractCutSurfaceVertex, IEquatable<NonConvexMonotoneCutSurfaceVertex> {
 
+    /*デバッグ用*/
+    public String Address;
+
     /// <summary>
     /// 頂点の種類
     /// </summary>

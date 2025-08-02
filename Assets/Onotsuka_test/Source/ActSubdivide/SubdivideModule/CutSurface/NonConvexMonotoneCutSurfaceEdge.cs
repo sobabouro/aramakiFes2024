@@ -1,6 +1,8 @@
 using UnityEngine;
 
 public class NonConvexMonotoneCutSurfaceEdge : Edge<NonConvexMonotoneCutSurfaceVertex> {
+    /*デバッグ用*/
+    public string Address;
 
     /// <summary>
     /// 辺の y 座標の最小値
