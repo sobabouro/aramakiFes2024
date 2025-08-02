@@ -203,17 +203,17 @@ public class DiagonalEdgeGenerator {
          */
         var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
 
-        Debug.Log($"Spilit(): すぐ左の辺 e[j]: {mostLeftNeighboringEdge.Start.PlanePosition}, {mostLeftNeighboringEdge.End.PlanePosition} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
+        Debug.Log($"Spilit(): すぐ左の辺 e[j]: e{mostLeftNeighboringEdge.Start.Address} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
 
         AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
         mostLeftNeighboringEdge.Helper = currVertex;
 
-        Debug.Log($"Spilit(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.PlanePosition}");
+        Debug.Log($"Spilit(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.Address}");
 
         _edgeIntervalTree.AddEdge(currEdge);
         currEdge.Helper = currVertex;
 
-        Debug.Log($"Spilit(): helper(e[i]) を v[i] にした: {currEdge.Helper.PlanePosition}");
+        Debug.Log($"Spilit(): helper(e[i]) を v[i] にした: {currEdge.Helper.Address}");
     }
 
     /// <summary>
@@ -253,6 +253,9 @@ public class DiagonalEdgeGenerator {
             Debug.Log($"Regular(): helper(e[i-1]) が統合点である");
 
             AddDiagonalEdge(currVertex, prevEdge.Helper);
+
+            Debug.Log($"--- RemoveEdge e{prevEdge.Start.Address}");
+            
             _edgeIntervalTree.RemoveEdge(prevEdge);
             _edgeIntervalTree.AddEdge(currEdge);
             currEdge.Helper = currVertex;
@@ -263,18 +266,18 @@ public class DiagonalEdgeGenerator {
             var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
 
             if (mostLeftNeighboringEdge == null) {
-                Debug.Log($"Regular(): すぐ左の辺が見つからない: v[i] = {currVertex.PlanePosition}");
+                Debug.Log($"Regular(): すぐ左の辺が見つからない: v[i] = {currVertex.Address}");
                 return;
             }
 
-            Debug.Log($"Regular(): すぐ左の辺 e[j]: {mostLeftNeighboringEdge.Start.PlanePosition}, {mostLeftNeighboringEdge.End.PlanePosition} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
+            Debug.Log($"Regular(): すぐ左の辺 e[j]: e{mostLeftNeighboringEdge.Start.Address} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
 
             if (mostLeftNeighboringEdge.Helper?.VertexType == VertexType.Merge) {
                 AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
             }
             mostLeftNeighboringEdge.Helper = currVertex;
 
-            Debug.Log($"Regular(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.PlanePosition}");
+            Debug.Log($"Regular(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.Address}");
         }
     }
 
@@ -302,17 +305,20 @@ public class DiagonalEdgeGenerator {
 
             AddDiagonalEdge(currVertex, prevEdge.Helper);
         }
+
+        Debug.Log($"--- RemoveEdge e{prevEdge.Start.Address}");
+
         _edgeIntervalTree.RemoveEdge(prevEdge);
         var mostLeftNeighboringEdge = GetEdgeMostLeftNeighboringFromVertex(currVertex);
 
-        Debug.Log($"Merge(): すぐ左の辺 e[j]: {mostLeftNeighboringEdge.Start.PlanePosition}, {mostLeftNeighboringEdge.End.PlanePosition} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
+        Debug.Log($"Merge(): すぐ左の辺 e[j]: e{mostLeftNeighboringEdge.Start.Address} - ヘルパー頂点の種類 [{mostLeftNeighboringEdge.Helper?.VertexType}]");
 
         if (mostLeftNeighboringEdge.Helper?.VertexType == VertexType.Merge) {
             AddDiagonalEdge(currVertex, mostLeftNeighboringEdge.Helper);
         }
         mostLeftNeighboringEdge.Helper = currVertex;
 
-        Debug.Log($"Merge(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.PlanePosition}");
+        Debug.Log($"Merge(): helper(e[j]) を v[i] にした: {mostLeftNeighboringEdge.Helper.Address}");
     }
 
     /// <summary>
@@ -332,6 +338,9 @@ public class DiagonalEdgeGenerator {
         if (prevEdge.Helper?.VertexType == VertexType.Merge) {
             AddDiagonalEdge(currVertex, prevEdge.Helper);
         }
+
+        Debug.Log($"--- RemoveEdge e{prevEdge.Start.Address}");
+
         _edgeIntervalTree.RemoveEdge(prevEdge);
     }
 
@@ -408,14 +417,66 @@ public class DiagonalEdgeGenerator {
     /// </summary>
     /// <param name="startVertex"> 辺の始点 </param>
     /// <param name="endVertex"> 辺の終点 </param>
+    /// <remarks>
+    /// 対角線が水平である場合，アクティブな辺に水平なものがあれば，これら二つが重なっている場合がある </br>
+    /// この場合は，重複した部分を取り除いて残る部分を対角線として追加する
+    /// </remarks>
     private void AddDiagonalEdge(
         NonConvexMonotoneCutSurfaceVertex startVertex,
         NonConvexMonotoneCutSurfaceVertex endVertex
     ) {
+        // 対角線が水平でない場合
+        if (Mathf.Abs(startVertex.PlanePosition.y - endVertex.PlanePosition.y) > Epsilon) {
 
-        if (Mathf.Abs(startVertex.PlanePosition.y - endVertex.PlanePosition.y) < Epsilon) {
-            
+            // そのまま対角線を追加する
+            _diagonalSet.Add((startVertex, endVertex));
         }
-        _diagonalSet.Add((startVertex, endVertex));
+        // 対角線が水平である場合
+        else {
+
+            (var diagonalMin, var diagonalMax) = startVertex.PlanePosition.x < endVertex.PlanePosition.x
+                    ? (startVertex, endVertex)
+                    : (endVertex, startVertex);
+
+            Debug.Log($"==== アクティブな辺の数 [{_sortedXPositionEdgeInTree.Count}] ====");
+            foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
+                Debug.Log($"アクティブな辺 e{edge.Start.Address} {edge.Start.PlanePosition} -> {edge.End.PlanePosition}");
+            }
+            Debug.Log($"========");
+
+            foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
+
+                Debug.Log($"水平な対角線と重なっている可能性のある辺 e{edge.Start.Address} {edge.Start.PlanePosition} -> {edge.End.PlanePosition}");
+
+                // アクティブな辺のうち，水平のものである場合
+                if (Mathf.Abs(edge.Start.PlanePosition.y - edge.End.PlanePosition.y) < Epsilon) {
+
+                    Debug.Log($"水平な辺 e{edge.Start.Address}");
+
+                    (var edgeMin, var edgeMax) = edge.Start.PlanePosition.x < edge.End.PlanePosition.x
+                            ? (edge.Start, edge.End)
+                            : (edge.End, edge.Start);
+
+                    // 対角線とアクティブな辺が重なっている場合
+                    if (diagonalMin.PlanePosition.x == edgeMin.PlanePosition.x && edgeMax.PlanePosition.x <= diagonalMax.PlanePosition.x) {
+
+                        Debug.Log("右側に重複している");
+
+                        _diagonalSet.Add((edgeMax, diagonalMax));
+                        break;
+                    } else if (diagonalMin.PlanePosition.x <= edgeMin.PlanePosition.x && edgeMax.PlanePosition.x == diagonalMax.PlanePosition.x) {
+
+                        Debug.Log("左側に重複している");
+
+                        _diagonalSet.Add((diagonalMin, edgeMin));
+                        break;
+                    }
+                    // 対角線とアクティブな辺が重なっていないなら通常通り
+                    else {
+                        continue;
+                    }
+                }
+            }
+        }
     }
 }

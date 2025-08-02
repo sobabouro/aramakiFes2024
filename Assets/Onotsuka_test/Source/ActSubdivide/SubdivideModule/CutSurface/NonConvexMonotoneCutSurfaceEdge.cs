@@ -38,7 +38,7 @@ public class NonConvexMonotoneCutSurfaceEdge : Edge<NonConvexMonotoneCutSurfaceV
     public float GetXPositionIntersectionWithHorizon(float y) {
 
         if (Mathf.Abs(Start.PlanePosition.y - End.PlanePosition.y) < Epsilon) {
-            return Mathf.Min(Start.PlanePosition.x, End.PlanePosition.x);
+            return (Start.PlanePosition.x + End.PlanePosition.x) / 2;
         }
         return Start.PlanePosition.x +
                (y - Start.PlanePosition.y) *

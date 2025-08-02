@@ -101,7 +101,11 @@ public class LinkedVertexList : AbstractNodeSequenceList<LinkedVertex, NonConvex
         var sorted = indexedList
             .OrderByDescending(item => item.Vertex.PlanePosition.y)
             .ThenBy(item => item.Vertex.VertexType)
-            .ThenBy(item => item.Vertex.PlanePosition.x)
+            .ThenBy(item =>
+                item.Vertex.VertexType == VertexType.Merge
+                    ? -item.Vertex.PlanePosition.x
+                    : item.Vertex.PlanePosition.x
+            )
             .ToList();
 
         return sorted
