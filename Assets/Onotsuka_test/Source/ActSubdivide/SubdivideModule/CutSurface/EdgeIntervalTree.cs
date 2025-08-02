@@ -75,7 +75,7 @@ public class EdgeIntervalTree {
             //if (y > edge.MinY - Epsilon && y < edge.MaxY + Epsilon) {
             //    result.Add(edge);
             //}
-            if (y >= edge.MinY && y < edge.MaxY) {
+            if (y >= edge.MinY && y <= edge.MaxY) {
                 result.Add(edge);
             }
         }

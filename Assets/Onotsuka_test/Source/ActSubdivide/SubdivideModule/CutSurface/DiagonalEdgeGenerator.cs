@@ -112,46 +112,6 @@ public class DiagonalEdgeGenerator {
     }
 
     /// <summary>
-    /// 指定された頂点の最も左側にある辺の始点を取得するメソッド
-    /// comparer の HorizonY が既定されていることが前提
-    /// </summary>
-    /// <param name="vertex"> 頂点 </param>
-    /// <returns> 頂点の最も左側にある辺 </returns>
-    /// <exception cref="InvalidOperationException"> 隣接頂点がない場合 </exception>
-    private NonConvexMonotoneCutSurfaceEdge GetEdgeMostLeftNeighboringFromVertex(NonConvexMonotoneCutSurfaceVertex vertex) {
-
-        NonConvexMonotoneCutSurfaceEdge tmpSearchKey = new(vertex, vertex);
-        NonConvexMonotoneCutSurfaceEdge? mostLeftNeighboringEdge = null;
-        bool isRegularType = vertex.VertexType == VertexType.Regular;
-
-        foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
-            int comparisonResult = _sortedXPositionEdgeInTree.Comparer.Compare(tmpSearchKey, edge);
-
-            // 辺が対象頂点よりも左側にある場合
-            if (comparisonResult > 0) {
-
-                // 条件1. 対象頂点を含む辺ではない
-                bool isNotContainsVertex = !edge.Start.Equals(vertex) && !edge.End.Equals(vertex);
-                // 条件2. 対象頂点に暫定解より近い
-                bool isMoreCloser = mostLeftNeighboringEdge == null 
-                    ? true 
-                    : mostLeftNeighboringEdge.GetXPositionIntersectionWithHorizon(EdgeComparer.HorizonY) <
-                      edge.GetXPositionIntersectionWithHorizon(EdgeComparer.HorizonY);
-                // 条件3. 通常点以外であれば，MinY < y < MaxY を満たしているもののみが対象である
-                if (!isRegularType)
-                    isMoreCloser = isMoreCloser && edge.MinY < EdgeComparer.HorizonY && EdgeComparer.HorizonY < edge.MaxY;
-
-                // 条件を満たす場合、最も左側の辺を更新する
-                if (isNotContainsVertex && isMoreCloser)
-                    mostLeftNeighboringEdge = edge;
-            }
-        }
-        //if (mostLeftNeighboringEdge == null) 
-        //    throw new InvalidOperationException("no neighboring edge found for the vertex.");
-        return mostLeftNeighboringEdge;
-    }
-
-    /// <summary>
     /// 対角線を生成するための処理
     /// イベントポイント (頂点) の頂点種類によって処理を分岐する
     /// インベントポイントは，図形の頂点リストを y 座標でソートした順で処理される
@@ -376,6 +336,51 @@ public class DiagonalEdgeGenerator {
     }
 
     /// <summary>
+    /// 指定された頂点の最も左側にある辺の始点を取得するメソッド
+    /// comparer の HorizonY が既定されていることが前提
+    /// </summary>
+    /// <param name="vertex"> 頂点 </param>
+    /// <returns> 頂点の最も左側にある辺 </returns>
+    /// <exception cref="InvalidOperationException"> 隣接頂点がない場合 </exception>
+    private NonConvexMonotoneCutSurfaceEdge GetEdgeMostLeftNeighboringFromVertex(NonConvexMonotoneCutSurfaceVertex vertex) {
+
+        NonConvexMonotoneCutSurfaceEdge tmpSearchKey = new(vertex, vertex);
+        NonConvexMonotoneCutSurfaceEdge? mostLeftNeighboringEdge = null;
+        bool isRegularType = vertex.VertexType == VertexType.Regular;
+
+        foreach (var edge in _sortedXPositionEdgeInTree.Keys) {
+            int comparisonResult = _sortedXPositionEdgeInTree.Comparer.Compare(tmpSearchKey, edge);
+
+            // 辺が対象頂点よりも左側にある場合
+            if (comparisonResult > 0) {
+
+                // 条件1. 対象頂点を含む辺ではない
+                bool isNotContainsVertex = !edge.Start.Equals(vertex) && !edge.End.Equals(vertex);
+                // 条件2. 対象頂点に暫定解より近い
+                bool isMoreCloser = mostLeftNeighboringEdge == null
+                    ? true
+                    : mostLeftNeighboringEdge.GetXPositionIntersectionWithHorizon(EdgeComparer.HorizonY) <
+                      edge.GetXPositionIntersectionWithHorizon(EdgeComparer.HorizonY);
+                // 条件3. 通常点は MinY <= y < MaxY を満たすもの，通常点以外であれば MinY < y < MaxY を満たしているもののみが対象である
+                if (isRegularType)
+                    isMoreCloser = isMoreCloser && edge.MinY <= EdgeComparer.HorizonY && EdgeComparer.HorizonY < edge.MaxY;
+                else
+                    isMoreCloser = isMoreCloser && edge.MinY < EdgeComparer.HorizonY && EdgeComparer.HorizonY < edge.MaxY;
+
+                // 条件を満たす場合、最も左側の辺を更新する
+                if (isNotContainsVertex && isMoreCloser)
+                    mostLeftNeighboringEdge = edge;
+            } 
+            else {
+                break;
+            }
+        }
+        //if (mostLeftNeighboringEdge == null) 
+        //    throw new InvalidOperationException("no neighboring edge found for the vertex.");
+        return mostLeftNeighboringEdge;
+    }
+
+    /// <summary>
     /// 右側に図形の内部があるかどうかを判定するメソッド
     /// </summary>
     /// <param name="edge"> 判定対象の辺 </param>
@@ -407,6 +412,10 @@ public class DiagonalEdgeGenerator {
         NonConvexMonotoneCutSurfaceVertex startVertex,
         NonConvexMonotoneCutSurfaceVertex endVertex
     ) {
+
+        if (Mathf.Abs(startVertex.PlanePosition.y - endVertex.PlanePosition.y) < Epsilon) {
+            
+        }
         _diagonalSet.Add((startVertex, endVertex));
     }
 }
