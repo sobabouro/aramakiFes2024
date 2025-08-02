@@ -105,7 +105,7 @@ public class MonotoneGeometryPathList {
 
         foreach (var keyVertex in _map.GetAllKeys().Where(v => !visitedVertexSet.Contains(v)).ToList()) {
             // このキー頂点から始まるパスを全て試す
-            foreach (var currEdge in _map.GetSortedEdgesFromVertex(keyVertex, null)) {
+            foreach (var currEdge in _map.GetSortedEdgesFromIncomingVector(keyVertex, null)) {
                 if (visitedEdgeSet.Contains(currEdge)) {
                     continue;
                 }
@@ -121,7 +121,7 @@ public class MonotoneGeometryPathList {
                 while (!isClosedPath) {
 
                     bool foundNext = false;
-                    var sortedEdges = _map.GetSortedEdgesFromVertex(currVertex, prevVertex);
+                    var sortedEdges = _map.GetSortedEdgesFromIncomingVector(currVertex, prevVertex);
 
                     Debug.Log($"========");
                     Debug.Log($"探索開始: キー {currVertex.Address} に対して [{sortedEdges.Count}] 個の辺がマッピング.");
