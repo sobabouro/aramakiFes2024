@@ -1,8 +1,9 @@
+using System;
 using UnityEngine;
 
 public class NonConvexMonotoneCutSurfaceEdge : Edge<NonConvexMonotoneCutSurfaceVertex> {
     /*デバッグ用*/
-    public string Address;
+    public String Address;
 
     /// <summary>
     /// 辺の y 座標の最小値
@@ -50,6 +51,12 @@ public class NonConvexMonotoneCutSurfaceEdge : Edge<NonConvexMonotoneCutSurfaceV
     /// </summary>
     /// <returns> 対象の辺と逆向きの辺 </returns>
     public NonConvexMonotoneCutSurfaceEdge GetReverseEdge() {
-        return new NonConvexMonotoneCutSurfaceEdge(End, Start);
+
+        /*デバッグ用*/
+        var edge = new NonConvexMonotoneCutSurfaceEdge(End, Start);
+        edge.Address = Address + "_reverse";
+        return edge;
+
+        //return new NonConvexMonotoneCutSurfaceEdge(End, Start);
     }
 }

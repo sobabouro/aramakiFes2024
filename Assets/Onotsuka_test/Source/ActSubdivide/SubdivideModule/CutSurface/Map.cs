@@ -23,28 +23,23 @@ public class Map {
     /// <param name="edge"> 追加する辺 </param>"
     public void AddEdge(NonConvexMonotoneCutSurfaceEdge edge) {
 
-        var vertex1 = edge.Start;
-        var vertex2 = edge.End;
-
-        AddDirectedEdgeToMap(vertex1, vertex2);
-        AddDirectedEdgeToMap(vertex2, vertex1);
+        AddDirectedEdgeToMap(edge);
+        AddDirectedEdgeToMap(edge.GetReverseEdge());
     }
 
     /// <summary>
     /// 指定された始点から終点への有向辺をマップに追加する
     /// </summary>
-    /// <param name="start"> 始点 </param>
-    /// <param name="end"> 終点 </param>
-    private void AddDirectedEdgeToMap(NonConvexMonotoneCutSurfaceVertex start, NonConvexMonotoneCutSurfaceVertex end) {
+    /// <param name="edge"> 追加する有向辺 </param>
+    private void AddDirectedEdgeToMap(NonConvexMonotoneCutSurfaceEdge edge) {
 
         // 始点のリストが存在しない場合は新規作成する
-        if (!_map.ContainsKey(start)) 
-            _map[start] = new List<NonConvexMonotoneCutSurfaceEdge>();
-        var edge = new NonConvexMonotoneCutSurfaceEdge(start, end);
+        if (!_map.ContainsKey(edge.Start)) 
+            _map[edge.Start] = new List<NonConvexMonotoneCutSurfaceEdge>();
 
         // 既に存在する辺でない場合のみ追加する
-        if (!_map[start].Contains(edge)) {
-            _map[start].Add(edge);
+        if (!_map[edge.Start].Contains(edge)) {
+            _map[edge.Start].Add(edge);
         }
     }
 

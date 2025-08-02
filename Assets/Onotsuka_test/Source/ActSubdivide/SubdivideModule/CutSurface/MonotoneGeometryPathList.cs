@@ -65,7 +65,12 @@ public class MonotoneGeometryPathList {
             do {
                 var nextNode = linkedVertex.TorusNext(currNode);
 
-                _map.AddEdge(new NonConvexMonotoneCutSurfaceEdge(currNode.Value, nextNode.Value));
+                /*デバッグ用*/
+                var edge = new NonConvexMonotoneCutSurfaceEdge(currNode.Value, nextNode.Value);
+                edge.Address = $"e{currNode.Value.Address}";
+                _map.AddEdge(edge);
+
+                //_map.AddEdge(new NonConvexMonotoneCutSurfaceEdge(currNode.Value, nextNode.Value));
                 UpdateMostHighestLowestPosition(currNode.Value);
                 currNode = nextNode;
             }
@@ -78,7 +83,7 @@ public class MonotoneGeometryPathList {
         // 対角線を追加する
         foreach (var diagonal in diagonalSet) {
 
-            Debug.Log($"MonotoneGeometryPathList: AddEdgeToMap() Diagonals {diagonal.Item1.PlanePosition} <-> {diagonal.Item2.PlanePosition}.");
+            Debug.Log($"MonotoneGeometryPathList: AddEdgeToMap() Diagonals {diagonal.Item1.Address} <-> {diagonal.Item2.Address}.");
 
             /*デバッグ用*/
             var edge = new NonConvexMonotoneCutSurfaceEdge(diagonal.Item1, diagonal.Item2);
@@ -121,13 +126,13 @@ public class MonotoneGeometryPathList {
                     Debug.Log($"========");
                     Debug.Log($"探索開始: キー {currVertex.Address} に対して [{sortedEdges.Count}] 個の辺がマッピング.");
                     foreach (var edge in sortedEdges) {
-                        Debug.Log($"Sorted Edge: {edge.Start.PlanePosition} -> {edge.End.PlanePosition}");
+                        Debug.Log($"Sorted Edge: {edge.Address}");
                     }
                     Debug.Log($"========");
 
                     foreach (var nextEdge in sortedEdges) {
 
-                        Debug.Log($"対象頂点 {currVertex.PlanePosition} に接続するか，list の要素 {nextEdge.Start.PlanePosition} -> {nextEdge.End.PlanePosition} を判定する.");
+                        Debug.Log($"対象頂点 {currVertex.Address} に接続するか，list の要素 {nextEdge.Address} を判定する.");
 
                         // 直前の頂点に戻る辺 (頂点)、または既に使われた辺 (頂点) ではない，接続する頂点であれば更新する
                         if (!nextEdge.End.Equals(prevVertex) && !visitedEdgeSet.Contains(nextEdge)) {
@@ -137,7 +142,7 @@ public class MonotoneGeometryPathList {
                             // 開始点に戻る辺が見つかった場合は閉パスとする
                             if (nextEdge.End.Equals(startVertex)) {
 
-                                Debug.Log($"開始点 {startVertex.PlanePosition} に戻るので，閉パスとする");
+                                Debug.Log($"開始点 {startVertex.Address} に戻るので，閉パスとする");
 
                                 isClosedPath = true;
                             }
@@ -147,7 +152,7 @@ public class MonotoneGeometryPathList {
                             // パスに頂点を追加
                             if (!currPath.Contains(nextEdge.End)) {
 
-                                Debug.Log($"パスに {nextEdge.End.PlanePosition} を追加する");
+                                Debug.Log($"パスに {nextEdge.Address} を追加する");
 
                                 currPath.AddLast(nextEdge.End);
                             } 
@@ -169,7 +174,7 @@ public class MonotoneGeometryPathList {
                     }
 
                     if (!foundNext) {
-                        Debug.LogWarning($"MonotoneGeometryPathList: No valid next edge found for {currVertex.PlanePosition}. Path might be incomplete.");
+                        Debug.LogWarning($"MonotoneGeometryPathList: No valid next edge found for {currVertex.Address}. Path might be incomplete.");
                         break;
                     }
                 }
@@ -178,19 +183,19 @@ public class MonotoneGeometryPathList {
                 if (isClosedPath && currPath.Count > 2) {
                     _pathList.Add(currPath);
 
-                    Debug.Log($"MonotoneGeometryPathList: Closed path found starting from {startVertex.PlanePosition} with {currPath.Count} vertices.");
+                    Debug.Log($"MonotoneGeometryPathList: Closed path found starting from {startVertex.Address} with {currPath.Count} vertices.");
 
                     Debug.Log($"--------");
 
                     foreach (var vertex in currPath) {
                         visitedVertexSet.Add(vertex);
 
-                       　Debug.Log($"{vertex.PlanePosition}");
+                       　Debug.Log($"{vertex.Address}");
                     }
                     Debug.Log($"--------");
                 } 
                 else {
-                    Debug.LogWarning($"MonotoneGeometryPathList: Path starting from {startVertex.PlanePosition} could not be closed or was too short.");
+                    Debug.LogWarning($"MonotoneGeometryPathList: Path starting from {startVertex.Address} could not be closed or was too short.");
                 }
             }
         }
