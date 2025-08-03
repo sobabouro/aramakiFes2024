@@ -105,11 +105,13 @@ public class MonotoneGeometryPathList {
         HashSet<NonConvexMonotoneCutSurfaceVertex> visitedVertexSet = new(); // ループの始点として使用済みか追跡
 
         foreach (var keyVertex in _map.GetAllKeys().Where(v => !visitedVertexSet.Contains(v)).ToList()) {
+
             // このキー頂点から始まるパスを全て試す
             foreach (var currEdge in _map.GetSortedEdgesFromIncomingVector(keyVertex, null)) {
-                if (visitedEdgeSet.Contains(currEdge)) {
+
+                // 既に訪問済みの辺はスキップする
+                if (visitedEdgeSet.Contains(currEdge))
                     continue;
-                }
 
                 MonotoneGeometryPath currPath = new MonotoneGeometryPath();
                 NonConvexMonotoneCutSurfaceVertex startVertex = currEdge.Start;
@@ -124,37 +126,19 @@ public class MonotoneGeometryPathList {
                     bool foundNext = false;
                     var sortedEdges = _map.GetSortedEdgesFromIncomingVector(currVertex, prevVertex);
 
-                    Debug.Log($"========");
-                    Debug.Log($"探索開始: キー {currVertex.Address} に対して [{sortedEdges.Count}] 個の辺がマッピング.");
-                    foreach (var edge in sortedEdges) {
-                        Debug.Log($"Sorted Edge: {edge.Address}");
-                    }
-                    Debug.Log($"========");
-
                     foreach (var nextEdge in sortedEdges) {
-
-                        Debug.Log($"対象頂点 {currVertex.Address} に接続するか，list の要素 {nextEdge.Address} を判定する.");
 
                         // 直前の頂点に戻る辺 (頂点)、または既に使われた辺 (頂点) ではない，接続する頂点であれば更新する
                         if (!nextEdge.End.Equals(prevVertex) && !visitedEdgeSet.Contains(nextEdge)) {
 
-                            Debug.Log($"更新準備");
-
                             // 開始点に戻る辺が見つかった場合は閉パスとする
-                            if (nextEdge.End.Equals(startVertex)) {
-
-                                Debug.Log($"開始点 {startVertex.Address} に戻るので，閉パスとする");
-
+                            if (nextEdge.End.Equals(startVertex))
                                 isClosedPath = true;
-                            }
 
                             visitedEdgeSet.Add(nextEdge);
 
                             // パスに頂点を追加
                             if (!currPath.Contains(nextEdge.End)) {
-
-                                Debug.Log($"パスに {nextEdge.Address} を追加する");
-
                                 currPath.AddLast(nextEdge.End);
                             } 
                             else {
@@ -171,7 +155,6 @@ public class MonotoneGeometryPathList {
                             foundNext = true;
                             break;
                         }
-                        Debug.Log($"更新しない，list の次の辺を判定する");
                     }
 
                     if (!foundNext) {

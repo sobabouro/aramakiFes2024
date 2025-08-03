@@ -163,16 +163,33 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
         NonConvexMonotoneCutSurfaceVertex[] sortedArray = SortVertexYPosition();
         Stack<NonConvexMonotoneCutSurfaceVertex> stack = new();
 
+        Debug.Log($"sorted array: 頂点数 = {sortedArray.Length}");
+        foreach (var vertex in sortedArray) {
+            Debug.Log($"頂点: {vertex.Address}, SideType: {vertex.SideType}");
+        }
+
         stack.Push(sortedArray[0]);
+        Debug.Log($"stack[1]: {sortedArray[0].Address}, SideType: {sortedArray[0].SideType}");
         stack.Push(sortedArray[1]);
+        Debug.Log($"stack[2]: {sortedArray[1].Address}, SideType: {sortedArray[1].SideType}");
 
         for (int i = 2; i < sortedArray.Length - 1; i++) {
 
+            Debug.Log($"処理頂点: {sortedArray[i].Address}, SideType: {sortedArray[i].SideType}");
+
+            Debug.Log($"peek: {stack.Peek().Address}");
+
             if (stack.Peek().SideType != sortedArray[i].SideType) {
+
+                Debug.Log("異なる境界");
+
                 while (stack.Count >= 2) {
 
                     var point1 = stack.Pop();
                     var point2 = stack.Count >= 2 ? stack.Peek() : stack.Pop();
+
+                    Debug.Log($"トライアングル構築: p1[{point1.SideType}], p2[{point2.SideType}], v_i[{sortedArray[i].SideType}] (異なる境界)");
+                    Debug.Log($"< {point1.Address}, {point2.Address}, {sortedArray[i].Address} >");
 
                     CreateTriangle(
                         (point1, point2, sortedArray[i]),
@@ -187,6 +204,9 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
                 stack.Push(sortedArray[i]);
             } 
             else {
+
+                Debug.Log("同じ境界");
+
                 bool isContinue = true;
                 bool isLastElement = false;
                 NonConvexMonotoneCutSurfaceVertex point1 = null, point2 = null;
@@ -204,6 +224,10 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
 
                     // 左側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に時計回りに並ぶ場合) 
                     if (sortedArray[i].SideType == SideType.Left && Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
+
+                        Debug.Log($"トライアングル構築: p1[{point1.SideType}], p2[{point2.SideType}], v_i[{sortedArray[i].SideType}] (左側境界)");
+                        Debug.Log($"< {point1.Address}, {point2.Address}, {sortedArray[i].Address} >");
+
                         CreateTriangle(
                             (point1, point2, sortedArray[i]),
                             boundingBox,
@@ -216,6 +240,10 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
                     }
                     // 右側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に反時計回りに並ぶ場合)
                     else if (sortedArray[i].SideType == SideType.Right && !Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
+
+                        Debug.Log($"トライアングル構築: p1[{point1.SideType}], p2[{point2.SideType}], v_i[{sortedArray[i].SideType}] (右側境界)");
+                        Debug.Log($"< {point1.Address}, {point2.Address}, {sortedArray[i].Address} >");
+
                         CreateTriangle(
                             (point1, point2, sortedArray[i]),
                             boundingBox,
