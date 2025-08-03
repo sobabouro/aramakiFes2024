@@ -35,17 +35,13 @@ namespace CalculationUtils {
         /// 頂点1, 頂点2, 頂点3 の順に頂点が時計回りに並んでいるかを判定するメソッド
         /// 辺21 と 辺23 の外積 < 0 の場合は時計周り
         /// </summary>
-        /// <param name="vector1"> 頂点 1 </param>
-        /// <param name="vector2"> 頂点 2 </param>
-        /// <param name="vector3"> 頂点 3 </param>
+        /// <param name="vectors"> 連続する三頂点 </param>
         /// <returns> 時計回りであれば true, そうでなければ false </returns>
         public static bool IsClockwise(
-            Vector2 vector1,
-            Vector2 vector2,
-            Vector2 vector3
+            (Vector2, Vector2, Vector2) vectors
         ) {
-            Vector2 v1 = vector1 - vector2;
-            Vector2 v2 = vector3 - vector2;
+            Vector2 v1 = vectors.Item1 - vectors.Item2;
+            Vector2 v2 = vectors.Item3 - vectors.Item2;
 
             return (v1.x * v2.y - v1.y * v2.x) > 0;
         }
