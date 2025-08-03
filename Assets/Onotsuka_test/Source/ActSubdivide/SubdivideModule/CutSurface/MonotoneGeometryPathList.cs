@@ -89,6 +89,7 @@ public class MonotoneGeometryPathList {
             var edge = new NonConvexMonotoneCutSurfaceEdge(diagonal.Item1, diagonal.Item2);
             edge.Address = $"diagonal[{diagonalCount++}]";
             _map.AddEdge(edge);
+            _map.AddEdge(edge.GetReverseEdge());
 
             //_map.AddEdge(new NonConvexMonotoneCutSurfaceEdge(diagonal.Item1, diagonal.Item2));
         }

@@ -6,6 +6,8 @@ using UnityEngine;
 
 public class Map {
 
+    private readonly IEdgeSortStrategy _sortStrategy;
+
     /// <summary>
     /// 各頂点において，その頂点から接続するすべての辺へのマッピング
     /// </summary>
@@ -15,6 +17,17 @@ public class Map {
     /// コンストラクタ
     /// </summary>
     public Map() {
+
+        _sortStrategy = new PriorityLeftTurnSortStrategy();
+        _map = new Dictionary<NonConvexMonotoneCutSurfaceVertex, List<NonConvexMonotoneCutSurfaceEdge>>();
+    }
+
+    /// <summary>
+    /// コンストラクタ
+    /// </summary>
+    public Map(IEdgeSortStrategy sortStrategy) {
+
+        _sortStrategy = sortStrategy;
         _map = new Dictionary<NonConvexMonotoneCutSurfaceVertex, List<NonConvexMonotoneCutSurfaceEdge>>();
     }
 
@@ -25,7 +38,7 @@ public class Map {
     public void AddEdge(NonConvexMonotoneCutSurfaceEdge edge) {
 
         AddDirectedEdgeToMap(edge);
-        AddDirectedEdgeToMap(edge.GetReverseEdge());
+        //AddDirectedEdgeToMap(edge.GetReverseEdge());
     }
 
     /// <summary>
@@ -66,64 +79,13 @@ public class Map {
                 ? Vector2.right
                 : currVertex.PlanePosition - prevVertex.PlanePosition;
 
-        bool hasLeftTurn = HasLeftTurnEdge(incomingVector, edges, out var edgeListHasAngleTag);
-
-        return SortEdgesByAngle(hasLeftTurn, edgeListHasAngleTag);
-    }
-
-    /// <summary>
-    /// 指定された入射ベクトルに対して，左折する辺が存在するかを判定する
-    /// </summary>
-    /// <param name="incomingVector"> 入射ベクトル </param>
-    /// <param name="edges"> 判定対象の辺リスト </param>
-    /// <param name="edgeListHasAngleTag"> 角度情報を持った辺リスト </param>
-    /// <returns> 左折する辺があれば true, そうでなければ false を返す </returns>
-    private bool HasLeftTurnEdge(
-        Vector2 incomingVector,
-        List<NonConvexMonotoneCutSurfaceEdge> edges,
-        out List<(float angle, NonConvexMonotoneCutSurfaceEdge edge)> edgeListHasAngleTag
-    ) {
-        bool hasLeftTurn = false;
-        edgeListHasAngleTag = new List<(float angle, NonConvexMonotoneCutSurfaceEdge edge)>();
-
-        foreach (var edge in edges) {
-            Vector2 nextVector = edge.End.PlanePosition - edge.Start.PlanePosition;
+        var edgesWithAngles = edges.Select(edge => {
+            Vector2 nextVector = (edge.End.PlanePosition - edge.Start.PlanePosition).normalized;
             float angle = Vector2.SignedAngle(incomingVector, nextVector);
+            return (edge, angle);
+        }).ToList();
 
-            // 角度が180度の場合は例外として左右判定には使用しない
-            if (Mathf.Abs(angle) > 179.9f) {
-                edgeListHasAngleTag.Add((angle, edge));
-                continue;
-            }
-
-            if (angle > 0) {
-                hasLeftTurn = true;
-            }
-            edgeListHasAngleTag.Add((angle, edge));
-        }
-        return hasLeftTurn;
-    }
-
-    /// <summary>
-    /// 辺リストを右左折判定情報と角度に基づいてソートする
-    /// </summary>
-    /// <param name="hasLeftTurn"> 左側に辺を所持するかどうか </param>
-    /// <param name="edgeListHasAngleTag"> 角度情報を持った辺リスト </param>
-    /// <returns> ソートされた辺リスト </returns>
-    private List<NonConvexMonotoneCutSurfaceEdge> SortEdgesByAngle(
-        bool hasLeftTurn,
-        List<(float angle, NonConvexMonotoneCutSurfaceEdge edge)> edgeListHasAngleTag
-    ) {
-        if (hasLeftTurn) {
-            return edgeListHasAngleTag
-                .OrderByDescending(item => Mathf.Abs(item.angle) > 179.9f ? -181f : item.angle)
-                .Select(item => item.edge).ToList();
-        } 
-        else {
-            return edgeListHasAngleTag
-                .OrderBy(item => Mathf.Abs(item.angle) > 179.9f ? 181f : item.angle)
-                .Select(item => item.edge).ToList();
-        }
+        return _sortStrategy.Sort(edgesWithAngles);
     }
 
     /// <summary>
