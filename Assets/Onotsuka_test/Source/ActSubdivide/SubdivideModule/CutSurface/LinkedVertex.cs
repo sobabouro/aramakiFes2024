@@ -97,12 +97,12 @@ public class LinkedVertex : AbstractNodeSequence<NonConvexMonotoneCutSurfaceVert
         float nextY = nextVertex.PlanePosition.y;
 
         if (currY >= prevY && currY > nextY) {
-            currVertex.VertexType = Calculation.IsClockwise(prevVertex.PlanePosition, currVertex.PlanePosition, nextVertex.PlanePosition)
+            currVertex.VertexType = Calculation.IsClockwise((prevVertex.PlanePosition, currVertex.PlanePosition, nextVertex.PlanePosition))
                 ? VertexType.Split
                 : VertexType.Start;
         } 
         else if (currY <= prevY && currY < nextY) {
-            currVertex.VertexType = Calculation.IsClockwise(prevVertex.PlanePosition, currVertex.PlanePosition, nextVertex.PlanePosition)
+            currVertex.VertexType = Calculation.IsClockwise((prevVertex.PlanePosition, currVertex.PlanePosition, nextVertex.PlanePosition))
                 ? VertexType.Merge
                 : VertexType.End;
         } 
