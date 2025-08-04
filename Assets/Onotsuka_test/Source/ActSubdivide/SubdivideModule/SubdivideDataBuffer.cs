@@ -56,7 +56,7 @@ public class SubdivideDataBuffer {
         MeshContainer originMesh, 
         MeshContainer frontsideMesh, 
         MeshContainer backsideMesh,
-        bool addCutSurfaceMaterial = false
+        bool hasCutSurfaceMaterial = false
     ) {
         _polygonBuffer.MakeBaseSurfacePolygon(
             trackerArray, 
@@ -68,7 +68,7 @@ public class SubdivideDataBuffer {
         _cutSurfacePolygonBuffer.MakeCutSurfacePolygon(
             frontsideMesh,
             backsideMesh,
-            addCutSurfaceMaterial
+            hasCutSurfaceMaterial
         );
     }
 }

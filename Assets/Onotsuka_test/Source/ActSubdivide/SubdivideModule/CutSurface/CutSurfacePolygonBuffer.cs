@@ -59,11 +59,11 @@ public class CutSurfacePolygonBuffer {
     /// </summary>
     /// <param name="frontsideMesh"> 切断後の法線側メッシュコンテナ </param>
     /// <param name="backsideMesh"> 切断後の反法線側メッシュコンテナ </param>
-    /// <param name="addCutSurfaceMaterial"> 切断平面用のマテリアルの有無 </param>
+    /// <param name="hasCutSurfaceMaterial"> 切断平面用のマテリアルの有無 </param>
     public void MakeCutSurfacePolygon(
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh, 
-        bool addCutSurfaceMaterial = false
+        bool hasCutSurfaceMaterial = false
     ) {
         if (_linkedVertexList.Count == 0) {
             Debug.LogWarning("CutSurfacePolygonBuffer: No vertices to process.");
@@ -77,7 +77,7 @@ public class CutSurfacePolygonBuffer {
         _monotoneGeometryPathList = new MonotoneGeometryPathList(_linkedVertexList, diagonalSet);
         _monotoneGeometryPathList.MakePolygon(
             _localPlane,
-            addCutSurfaceMaterial,
+            hasCutSurfaceMaterial,
             frontsideMesh,
             backsideMesh
         );

@@ -8,12 +8,12 @@ using System.Net;
 /// <summary>
 /// 切断平面上の y 単調な多角形のパスを管理するクラス
 /// </summary>
-public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVertex> {
+public class MonotoneGeometryPath : IEnumerable<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> {
 
     /// <summary>
-    /// パスの双方向リスト
+    /// (始点, 直前の頂点) ペアのパス
     /// </summary>
-    private LinkedList<NonConvexMonotoneCutSurfaceVertex> _path = new();
+    private LinkedList<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> _path = new();
 
     /// <summary>
     /// パスの要素数を取得するプロパティ
@@ -24,7 +24,7 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     /// パスのイテレータを返すメソッド
     /// </summary>
     /// <returns> シーケンスのリストを列挙するためのイテレータ </returns>
-    public IEnumerator<NonConvexMonotoneCutSurfaceVertex> GetEnumerator() => _path.GetEnumerator();
+    public IEnumerator<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> GetEnumerator() => _path.GetEnumerator();
 
     /// <summary>
     /// IEnumerable インターフェースの GetEnumerator メソッドの実装
@@ -35,72 +35,67 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     /// <summary>
     /// パスの中で最も高い頂点のノード
     /// </summary>
-    private LinkedListNode<NonConvexMonotoneCutSurfaceVertex> _mostHighestNode = null;
+    private LinkedListNode<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> _mostHighestNode = null;
 
     /// <summary>
     /// パスの中で最も低い頂点のノード
     /// </summary>
-    private LinkedListNode<NonConvexMonotoneCutSurfaceVertex> _mostLowestNode = null;
-
-    /// <summary>
-    /// パスの中で最も高い頂点の Y 座標
-    /// </summary>
-    private float _mostHighestYPosition = float.MinValue;
-
-    /// <summary>
-    /// パスの中で最も低い頂点の Y 座標
-    /// </summary>
-    private float _mostLowestYPosition = float.MaxValue;
+    private LinkedListNode<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> _mostLowestNode = null;
 
     /// <summary>
     /// パスの先頭に頂点を追加するメソッド
     /// </summary>
-    /// <param name="vertex"> 追加する頂点 </param>
-    public void AddFirst(NonConvexMonotoneCutSurfaceVertex vertex) {
-        _path.AddFirst(vertex);
+    /// <param name="pair"> 追加する頂点と辺のペア </param>
+    public void AddFirst((NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex) pair) {
 
-        if (
-            vertex.PlanePosition.y > _mostHighestYPosition ||
-            (vertex.PlanePosition.y == _mostHighestYPosition &&
-             vertex.PlanePosition.x <= _mostHighestNode.Value.PlanePosition.x)
-        ) {
-            _mostHighestYPosition = vertex.PlanePosition.y;
-            _mostHighestNode = _path.First;
-        }
-
-        if (
-            vertex.PlanePosition.y < _mostLowestYPosition ||
-            (vertex.PlanePosition.y == _mostLowestYPosition &&
-             vertex.PlanePosition.x >= _mostLowestNode.Value.PlanePosition.x)
-        ) {
-            _mostLowestYPosition = vertex.PlanePosition.y;
-            _mostLowestNode = _path.First;
-        }
+        _path.AddFirst(pair);
+        UpdateExtremeNodes(pair, _path.First);
     }
 
     /// <summary>
     /// パスの末尾に頂点を追加するメソッド
     /// </summary>
-    /// <param name="vertex"> 追加する頂点 </param>
-    public void AddLast(NonConvexMonotoneCutSurfaceVertex vertex) {
-        _path.AddLast(vertex);
+    /// <param name="pair"> 追加するペア </param>
+    public void AddLast((NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex) pair) {
 
-        if (
-            vertex.PlanePosition.y > _mostHighestYPosition ||
-            (vertex.PlanePosition.y == _mostHighestYPosition &&
-             vertex.PlanePosition.x <= _mostHighestNode.Value.PlanePosition.x)
-        ) {
-            _mostHighestYPosition = vertex.PlanePosition.y;
-            _mostHighestNode = _path.Last;
+        _path.AddLast(pair);
+        UpdateExtremeNodes(pair, _path.Last);
+    }
+
+    /// <summary>
+    /// 最大最小地点ノードの更新を行うメソッド
+    /// </summary>
+    /// <param name="pair"> 追加したペア </param>
+    /// <param name="newNode"> 追加したペアのノード </param>
+    private void UpdateExtremeNodes(
+        (NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex) pair,
+        LinkedListNode<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> newNode
+    ) {
+        if (_mostHighestNode == null) {
+            _mostHighestNode = newNode;
         }
+        else {
+            var highestXPosition = _mostHighestNode.Value.Item1.PlanePosition.x;
+            var highestYPosition = _mostHighestNode.Value.Item1.PlanePosition.y;
+            var newXPosition = pair.Item1.PlanePosition.x;
+            var newYPosition = pair.Item1.PlanePosition.y;
 
-        if (
-            vertex.PlanePosition.y < _mostLowestYPosition ||
-            (vertex.PlanePosition.y == _mostLowestYPosition &&
-             vertex.PlanePosition.x >= _mostLowestNode.Value.PlanePosition.x)
-        ) {
-            _mostLowestYPosition = vertex.PlanePosition.y;
-            _mostLowestNode = _path.Last;
+            if (newYPosition > highestYPosition || (newYPosition == highestYPosition && newXPosition < highestXPosition)) {
+                _mostHighestNode = newNode;
+            }
+        }
+        if (_mostLowestNode == null) {
+            _mostLowestNode = newNode;
+        } 
+        else {
+            var lowestXPosition = _mostLowestNode.Value.Item1.PlanePosition.x;
+            var lowestYPosition = _mostLowestNode.Value.Item1.PlanePosition.y;
+            var newXPosition = pair.Item1.PlanePosition.x;
+            var newYPosition = pair.Item1.PlanePosition.y;
+
+            if (newYPosition < lowestYPosition || (newYPosition == lowestYPosition && newXPosition > lowestXPosition)) {
+                _mostLowestNode = newNode;
+            }
         }
     }
 
@@ -110,7 +105,9 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     /// </summary>
     /// <param name="node"> 対象ノード </param>
     /// <returns> 対象ノードの次のノード </returns>
-    public LinkedListNode<NonConvexMonotoneCutSurfaceVertex> TorusNext(LinkedListNode<NonConvexMonotoneCutSurfaceVertex> node) {
+    public LinkedListNode<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> TorusNext(
+        LinkedListNode<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> node
+    ) {
 
         if (node == null || _path.Count == 0)
             return null;
@@ -124,7 +121,9 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     /// </summary>
     /// <param name="node"> 対象ノード </param>
     /// <returns> 対象ノードの前のノード </returns>
-    public LinkedListNode<NonConvexMonotoneCutSurfaceVertex> TorusPrevious(LinkedListNode<NonConvexMonotoneCutSurfaceVertex> node) {
+    public LinkedListNode<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> TorusPrevious(
+        LinkedListNode<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> node
+    ) {
 
         if (node == null || _path.Count == 0)
             return null;
@@ -132,10 +131,50 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
         return node.Previous ?? _path.Last;
     }
 
+    /// <summary>
+    /// パスに指定された頂点が含まれているかを判定する
+    /// </summary>
+    /// <param name="vertex"> 判定する頂点 </param>
+    /// <returns> 含まれていれば true, そうでなければ false を返す </returns>
+    public bool Contains(NonConvexMonotoneCutSurfaceVertex vertex) {
+        return _path.Any(pair => pair.Item1.Equals(vertex));
+    }
+
+    /// <summary>
+    /// パスをもとに三角形ポリゴンを生成し，メッシュコンテナに追加するメソッド
+    /// </summary>
+    /// <param name="publicBoundingBox"> 切断平面上のすべての図形を包括するバウンディングボックス </param>
+    /// <param name="localPlane"> 切断平面 </param>
+    /// <param name="hasCutSurfaceMaterial"> 断面のマテリアルを所持するかどうか </param>
+    /// <param name="frontsideMesh"> 法線側の切断後メッシュコンテナ </param>
+    /// <param name="backsideMesh"> 反法線側の切断後メッシュコンテナ </param>
     public void MakePolygon(
-        BoundingBox boundingBox,
+        BoundingBox publicBoundingBox,
         Plane localPlane,
-        bool addCutSurfaceMaterial, 
+        bool hasCutSurfaceMaterial,
+        MeshContainer frontsideMesh,
+        MeshContainer backsideMesh
+    ) {
+        if (_path.Count <= 4) {
+            SinpleMakePolygon(publicBoundingBox, localPlane, hasCutSurfaceMaterial, frontsideMesh, backsideMesh);
+        } else {
+            MultipleMakePolygon(publicBoundingBox, localPlane, hasCutSurfaceMaterial, frontsideMesh, backsideMesh);
+        }
+    }
+
+    /// <summary>
+    /// パスに含まれる頂点数が多いときに単純な三角形分割をしてポリゴンを作成し，メッシュコンテナに追加するメソッド
+    /// このメソッドが呼び出される前に，パスの要素数が 5 個以上であることが保証されている必要がある
+    /// </summary>
+    /// <param name="publicBoundingBox"> 切断平面上のすべての図形を包括するバウンディングボックス </param>
+    /// <param name="localPlane"> 切断平面 </param>
+    /// <param name="hasCutSurfaceMaterial"> 断面のマテリアルを所持するかどうか </param>
+    /// <param name="frontsideMesh"> 法線側の切断後メッシュコンテナ </param>
+    /// <param name="backsideMesh"> 反法線側の切断後メッシュコンテナ </param>
+    private void MultipleMakePolygon(
+        BoundingBox publicBoundingBox,
+        Plane localPlane,
+        bool hasCutSurfaceMaterial, 
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh
     ) {
@@ -159,118 +198,184 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
          * 
          * ※ 以下実装では，対角線をリストに追加するのではなく，ポリゴンを直接生成する
          */
+
         ClusteringSideType();
-        NonConvexMonotoneCutSurfaceVertex[] sortedArray = SortVertexYPosition();
-        Stack<NonConvexMonotoneCutSurfaceVertex> stack = new();
+
+        (NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)[] sortedArray = SortVertexYPosition();
+        Stack<(NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)> stack = new();
 
         Debug.Log($"sorted array: 頂点数 = {sortedArray.Length}");
-        foreach (var vertex in sortedArray) {
-            Debug.Log($"頂点: {vertex.Address}, SideType: {vertex.SideType}");
+        foreach (var pair in sortedArray) {
+            Debug.Log($"頂点: {pair.Item1.Address}, SideType: {pair.Item1.SideType}");
         }
 
         stack.Push(sortedArray[0]);
-        Debug.Log($"stack[1]: {sortedArray[0].Address}, SideType: {sortedArray[0].SideType}");
         stack.Push(sortedArray[1]);
-        Debug.Log($"stack[2]: {sortedArray[1].Address}, SideType: {sortedArray[1].SideType}");
 
-        for (int i = 2; i < sortedArray.Length - 1; i++) {
+        for (int i = 2; i < sortedArray.Length; i++) {
 
-            Debug.Log($"処理頂点: {sortedArray[i].Address}, SideType: {sortedArray[i].SideType}");
+            Debug.Log($"処理頂点: {sortedArray[i].Item1.Address}, SideType: {sortedArray[i].Item1.SideType}");
 
-            Debug.Log($"peek: {stack.Peek().Address}");
+            foreach (var pair in stack) {
+                Debug.Log($"現在のスタック: {pair.Item1.Address}, SideType: {pair.Item1.SideType}");
+            }
 
-            if (stack.Peek().SideType != sortedArray[i].SideType) {
+            SideType topSideType = stack.Peek().Item1.SideType;
+
+            // スタックの一番上の頂点と現在の頂点が異なる境界に属している場合
+            if (topSideType != sortedArray[i].Item1.SideType) {
 
                 Debug.Log("異なる境界");
 
                 while (stack.Count >= 2) {
 
-                    var point1 = stack.Pop();
-                    var point2 = stack.Count >= 2 ? stack.Peek() : stack.Pop();
+                    var pair1 = stack.Pop();
+                    var pair2 = stack.Count >= 2 ? stack.Peek() : stack.Pop();
 
-                    Debug.Log($"トライアングル構築: p1[{point1.SideType}], p2[{point2.SideType}], v_i[{sortedArray[i].SideType}] (異なる境界)");
-                    Debug.Log($"< {point1.Address}, {point2.Address}, {sortedArray[i].Address} >");
+                    Debug.Log($"トライアングル構築: v_i[{sortedArray[i].Item1.SideType}], p1[{pair1.Item1.SideType}], p2[{pair2.Item1.SideType}] (異なる境界)");
+                    Debug.Log($"< {sortedArray[i].Item1.Address}, {pair1.Item1.Address}, {pair2.Item1.Address} >");
 
                     CreateTriangle(
-                        (point1, point2, sortedArray[i]),
-                        boundingBox,
+                        (pair1.Item1, pair2.Item1, sortedArray[i].Item1),
+                        publicBoundingBox,
                         localPlane,
                         frontsideMesh,
                         backsideMesh,
-                        addCutSurfaceMaterial
+                        hasCutSurfaceMaterial
                     );
                 }
                 stack.Push(sortedArray[i - 1]);
+
+                Debug.Log($"push: {sortedArray[i - 1].Item1.Address}");
+
                 stack.Push(sortedArray[i]);
-            } 
+
+                Debug.Log($"push: {sortedArray[i].Item1.Address}");
+            }
+            // スタックの一番上の頂点と現在の頂点が同じ境界に属している場合
             else {
 
                 Debug.Log("同じ境界");
 
-                bool isContinue = true;
-                bool isLastElement = false;
-                NonConvexMonotoneCutSurfaceVertex point1 = null, point2 = null;
+                bool isProcessPermission = false;
+                (NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex) prevLastPair = default;
 
-                while (stack.Count >= 2 && isContinue) {
-                    point1 = stack.Pop();
+                while (stack.Count >= 2) {
 
-                    if (stack.Count >= 2) {
-                        point2 = stack.Peek();
-                    } 
-                    else {
-                        point2 = stack.Pop();
-                        isLastElement = true;
+                    if (stack.Count == 2) 
+                        Debug.Log("同じ境界での最後のループ");
+
+                    var pair1 = prevLastPair = stack.Pop();
+                    var pair2 = stack.Pop();
+
+                    isProcessPermission = topSideType == SideType.Left
+                        ? Calculation.IsClockwise((pair1.Item1.PlanePosition, pair2.Item1.PlanePosition, sortedArray[i].Item1.PlanePosition))
+                        : !Calculation.IsClockwise((pair1.Item1.PlanePosition, pair2.Item1.PlanePosition, sortedArray[i].Item1.PlanePosition));
+
+                    if (!isProcessPermission) {
+
+                        stack.Push(pair2);
+
+                        Debug.Log("条件を満たさないため終了");
+
+                        break;
                     }
 
-                    // 左側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に時計回りに並ぶ場合) 
-                    if (sortedArray[i].SideType == SideType.Left && Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
+                    Debug.Log($"トライアングル構築: v_i[{sortedArray[i].Item1.SideType}], p1[{pair1.Item1.SideType}], p2[{pair2.Item1.SideType}] (同じ境界)");
+                    Debug.Log($"< {sortedArray[i].Item1.Address}, {pair1.Item1.Address}, {pair2.Item1.Address} >");
 
-                        Debug.Log($"トライアングル構築: p1[{point1.SideType}], p2[{point2.SideType}], v_i[{sortedArray[i].SideType}] (左側境界)");
-                        Debug.Log($"< {point1.Address}, {point2.Address}, {sortedArray[i].Address} >");
-
-                        CreateTriangle(
-                            (point1, point2, sortedArray[i]),
-                            boundingBox,
-                            localPlane,
-                            frontsideMesh,
-                            backsideMesh,
-                            addCutSurfaceMaterial
-                        );
-                        isContinue = true;
-                    }
-                    // 右側境界を走査中に，処理頂点が結ぶ対角線が図形内部にある場合 (直近三頂点が順に反時計回りに並ぶ場合)
-                    else if (sortedArray[i].SideType == SideType.Right && !Calculation.IsClockwise(sortedArray[i].PlanePosition, point1.PlanePosition, point2.PlanePosition)) {
-
-                        Debug.Log($"トライアングル構築: p1[{point1.SideType}], p2[{point2.SideType}], v_i[{sortedArray[i].SideType}] (右側境界)");
-                        Debug.Log($"< {point1.Address}, {point2.Address}, {sortedArray[i].Address} >");
-
-                        CreateTriangle(
-                            (point1, point2, sortedArray[i]),
-                            boundingBox,
-                            localPlane,
-                            frontsideMesh,
-                            backsideMesh,
-                            addCutSurfaceMaterial
-                        );
-                        isContinue = true;
-                    }
-                    // 図形内部に対角線が引けない場合 (辺が反っていて，辺を弓とすると対角線が弦となる形で図形の外部に結ばれてしまう)
-                    else {
-                        isContinue = false;
-                    }
-                    
+                    CreateTriangle(
+                        (pair1.Item1, pair2.Item1, sortedArray[i].Item1),
+                        publicBoundingBox,
+                        localPlane,
+                        frontsideMesh,
+                        backsideMesh,
+                        hasCutSurfaceMaterial
+                    );
+                    stack.Push(pair2);
                 }
-                if (isLastElement && point2 != null) {
-                    stack.Push(point2);
-                } 
-                else if (!isLastElement && point1 != null) {
-                    stack.Push(point1);
+
+                if (isProcessPermission) {
+                    stack.Push(sortedArray[i]);
+
+                    Debug.Log($"push: {sortedArray[i].Item1.Address}");
                 } 
                 else {
-                    Debug.LogError("MonotoneGeometryPath: Stack is empty or has no valid points to push.");
+                    stack.Push(prevLastPair);
+                    Debug.Log($"push: {prevLastPair.Item1.Address}");
+                    stack.Push(sortedArray[i]);
+                    Debug.Log($"push: {sortedArray[i].Item1.Address}");
                 }
-                stack.Push(sortedArray[i]);
             }
+        }
+    }
+
+    /// <summary>
+    /// パスに含まれる頂点数が少ないときに単純な三角形分割をしてポリゴンを作成し，メッシュコンテナに追加するメソッド
+    /// このメソッドが呼び出される前に，パスの要素数が 4 個以下であることが保証されている必要がある
+    /// </summary>
+    /// <param name="publicBoundingBox"> 切断平面上のすべての図形を包括するバウンディングボックス </param>
+    /// <param name="localPlane"> 切断平面 </param>
+    /// <param name="hasCutSurfaceMaterial"> 断面のマテリアルを所持するかどうか </param>
+    /// <param name="frontsideMesh"> 法線側の切断後メッシュコンテナ </param>
+    /// <param name="backsideMesh"> 反法線側の切断後メッシュコンテナ </param>
+    /// <remarks>
+    /// このメソッドはパスに含まれる要素数が [3, 4] 個のときに呼び出される </br>
+    /// 水平線を二本所持し，かつ 4 頂点しか持たないパスでは，パス内のソート時に例外が必要となるので，その特別処理も兼ねる
+    /// </remarks>
+    private void SinpleMakePolygon(
+        BoundingBox publicBoundingBox,
+        Plane localPlane,
+        bool hasCutSurfaceMaterial,
+        MeshContainer frontsideMesh,
+        MeshContainer backsideMesh
+    ) {
+        
+        if (_path.Count < 3) {
+
+            Debug.LogWarning("MonotoneGeometryPath: SinpleMakePolygon() - path element count is less than 3, cannot create polygon.");
+            return;
+        }
+        if (_path.Count == 3) {
+
+            var firstVertex = _path.First.Value.Item1;
+            var secondVertex = _path.First.Next.Value.Item1;
+            var thirdVertex = _path.Last.Value.Item1;
+
+            CreateTriangle(
+                (firstVertex, secondVertex, thirdVertex),
+                publicBoundingBox,
+                localPlane,
+                frontsideMesh,
+                backsideMesh,
+                hasCutSurfaceMaterial
+            );
+            return;
+        }
+        if (_path.Count == 4) {
+
+            var firstVertex = _path.First.Value.Item1;
+            var secondVertex = _path.First.Next.Value.Item1;
+            var thirdVertex = _path.Last.Previous.Value.Item1;
+            var fourthVertex = _path.Last.Value.Item1;
+
+            CreateTriangle(
+                (firstVertex, secondVertex, thirdVertex),
+                publicBoundingBox,
+                localPlane,
+                frontsideMesh,
+                backsideMesh,
+                hasCutSurfaceMaterial
+            );
+            CreateTriangle(
+                (firstVertex, thirdVertex, fourthVertex),
+                publicBoundingBox,
+                localPlane,
+                frontsideMesh,
+                backsideMesh,
+                hasCutSurfaceMaterial
+            );
+            return;
         }
     }
 
@@ -280,56 +385,69 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     /// </summary>
     private void ClusteringSideType() {
 
-        //var currentNode = _mostHighestNode;
-        //currentNode.Value.SideType = SideType.Top;
-
-        //currentNode = TorusNext(currentNode);
-
-        //while (currentNode != _mostLowestNode) {
-        //    currentNode.Value.SideType = SideType.Left;
-
-        //    currentNode = TorusNext(currentNode);
-        //}
-        //currentNode.Value.SideType = SideType.Bottom;
-
-        //currentNode = TorusNext(currentNode);
-
-        //while (currentNode != _mostHighestNode) {
-        //    currentNode.Value.SideType = SideType.Right;
-
-        //    currentNode = TorusNext(currentNode);
-        //}
-
         var currNode = _mostHighestNode;
 
         while (currNode != _mostLowestNode) {
             currNode = TorusNext(currNode);
-            currNode.Value.SideType = SideType.Left;
+            currNode.Value.Item1.SideType = SideType.Left;
         }
 
         currNode = _mostLowestNode;
 
         while (currNode != _mostHighestNode) {
-            currNode.Value.SideType = SideType.Right;
+            currNode.Value.Item1.SideType = SideType.Right;
             currNode = TorusNext(currNode);
         }
 
-        _mostHighestNode.Value.SideType = SideType.Top;
-        _mostLowestNode.Value.SideType = SideType.Bottom;
+        _mostHighestNode.Value.Item1.SideType = SideType.Top;
+        _mostLowestNode.Value.Item1.SideType = SideType.Bottom;
     }
 
     /// <summary>
     /// 連結図形辺シーケンスの頂点を Y 座標の降順にソートするメソッド
+    /// Y 座標が等しい場合は，直前の要素の頂点と接続する方を優先してソートする
     /// </summary>
     /// <returns> ソートされた頂点配列 </returns>
-    private NonConvexMonotoneCutSurfaceVertex[] SortVertexYPosition() {
+    /// <remarks>
+    /// Y 座標がすべて異なれば，スイープラインアルゴリズムにおいては単純に降順でソートすればよいが、 </br>
+    /// Y 座標が等しいものが混在する場合，一意にソートするためには、接続性に基づいて並び替える必要がある． </br>
+    /// </remarks>
+    private (NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex)[] SortVertexYPosition() {
 
-        NonConvexMonotoneCutSurfaceVertex[] sortedArray = _path
-            .OrderByDescending(vertex => vertex.PlanePosition.y)
-            .ThenBy(vertex => vertex.PlanePosition.x)
-            .ToArray();
+        var sortedList = _path
+        .OrderByDescending(pair => pair.Item1.PlanePosition.y)
+        .ThenBy(pair => pair.Item1.PlanePosition.x)
+        .ToList();
 
-        return sortedArray;
+        // 2. y座標が同じ頂点群を特定し、接続性に基づいて並び替える
+        for (int i = 1; i < sortedList.Count; i++) {
+
+            // 現在の要素のy座標が、前の要素のy座標と等しい場合
+            if (Mathf.Abs(sortedList[i].Item1.PlanePosition.y - sortedList[i - 1].Item1.PlanePosition.y) < float.Epsilon) {
+
+                // y座標が同じ頂点群（サブリスト）の開始インデックスを見つける
+                int startIndex = i - 1;
+                while (startIndex > 0 && Mathf.Abs(sortedList[startIndex - 1].Item1.PlanePosition.y - sortedList[i].Item1.PlanePosition.y) < float.Epsilon) {
+                    startIndex--;
+                }
+
+                // サブリストを切り出す
+                int count = i - startIndex + 1;
+                var sublist = sortedList.GetRange(startIndex, count);
+
+                var prevElement = startIndex > 0 ? sortedList[startIndex - 1] : default;
+
+                // 直前頂点と辺の右端が接続する場合，逆順にする
+                if (prevElement.Item2 == sublist.Last().Item1 || prevElement.Item1 == sublist.Last().Item2) {
+                    sortedList.Reverse(startIndex, count);
+                }
+
+                // カウンタを調整して、次の y 座標の異なる要素から再開する
+                i = startIndex + count - 1;
+            }
+        }
+
+        return sortedList.ToArray();
     }
 
     /// <summary>
@@ -340,14 +458,14 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
     /// <param name="localPlane"> 切断平面 </param>
     /// <param name="frontsideMesh"> 法線側メッシュ </param>
     /// <param name="backsideMesh"> 反法線側メッシュ </param>
-    /// <param name="addCutSurfaceMaterial"></param>
+    /// <param name="hasCutSurfaceMaterial"></param>
     private void CreateTriangle(
         (NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex, NonConvexMonotoneCutSurfaceVertex) triangle,
         BoundingBox boundingBox,
         Plane localPlane,
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh,
-        bool addCutSurfaceMaterial = false
+        bool hasCutSurfaceMaterial = false
     ) {
         Vector3 triangleNormal = Vector3.Cross(
             triangle.Item2.LocalPosition - triangle.Item1.LocalPosition,
@@ -373,7 +491,7 @@ public class MonotoneGeometryPath : IEnumerable<NonConvexMonotoneCutSurfaceVerte
 
         int materialIndex = 0;
 
-        if (addCutSurfaceMaterial)
+        if (hasCutSurfaceMaterial)
             materialIndex = frontsideMesh.SubmeshCount;
 
         frontsideMesh.AddMesh(

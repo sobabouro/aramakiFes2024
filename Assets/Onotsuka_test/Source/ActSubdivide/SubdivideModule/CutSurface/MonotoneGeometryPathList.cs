@@ -139,7 +139,7 @@ public class MonotoneGeometryPathList {
 
                             // パスに頂点を追加
                             if (!currPath.Contains(nextEdge.End)) {
-                                currPath.AddLast(nextEdge.End);
+                                currPath.AddLast((nextEdge.End, currVertex));
                             } 
                             else {
                                 // 既に含まれていて、それが始点でない場合はパスが交差している可能性があるため、ループを抜ける
@@ -171,10 +171,10 @@ public class MonotoneGeometryPathList {
 
                     Debug.Log($"--------");
 
-                    foreach (var vertex in currPath) {
-                        visitedVertexSet.Add(vertex);
+                    foreach (var pair in currPath) {
+                        visitedVertexSet.Add(pair.Item1);
 
-                       　Debug.Log($"{vertex.Address}");
+                       　Debug.Log($"{pair.Item1.Address}");
                     }
                     Debug.Log($"--------");
                 } 
@@ -189,12 +189,12 @@ public class MonotoneGeometryPathList {
     /// 切断平面上の y 単調な多角形のパスからポリゴンを生成するメソッド
     /// </summary>
     /// <param name="localPlane"> ローカル座標系の切断平面 </param>
-    /// <param name="addCutSurfaceMaterial"> 切断面に新規マテリアルを割り当てるかどうか </param>
+    /// <param name="hasCutSurfaceMaterial"> 切断面に新規マテリアルを割り当てるかどうか </param>
     /// <param name="frontsideMesh"> 切断後の法線側メッシュ </param>
     /// <param name="backsideMesh"> 切断後の反法線側メッシュ </param>
     public void MakePolygon(
         Plane localPlane,
-        bool addCutSurfaceMaterial,
+        bool hasCutSurfaceMaterial,
         MeshContainer frontsideMesh,
         MeshContainer backsideMesh
     ) {
@@ -205,7 +205,7 @@ public class MonotoneGeometryPathList {
             path.MakePolygon(
                 _boundingBox,
                 localPlane,
-                addCutSurfaceMaterial,
+                hasCutSurfaceMaterial,
                 frontsideMesh,
                 backsideMesh
             );

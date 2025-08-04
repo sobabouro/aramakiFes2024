@@ -16,7 +16,7 @@ public class ActSubdivide5 : MonoBehaviour {
     /// <param name="targetMesh"> 切断対象のメッシュ情報 </param>
     /// <param name="targetTransform"> 切断対象の変位情報 </param>
     /// <param name="cutter"> 切断する平面 </param>
-    /// <param name="addCutSurfaceMaterial"> <see langword="true"/> なら切断面にマテリアルを追加する </param>
+    /// <param name="hasCutSurfaceMaterial"> <see langword="true"/> なら切断面にマテリアルを追加する </param>
     /// <returns> 平面の表と裏に切断された後のメッシュ情報 </returns>
     public static (
         Mesh frontsideMeshOfPlane,
@@ -25,7 +25,7 @@ public class ActSubdivide5 : MonoBehaviour {
         Mesh targetMesh,
         Transform targetTransform,
         Plane cutter,
-        bool addCutSurfaceMaterial = false
+        bool hasCutSurfaceMaterial = false
     ) {
         // 切断平面が平行だと切断できないので、null を返す
         if (cutter.normal == Vector3.zero) {
@@ -190,7 +190,7 @@ public class ActSubdivide5 : MonoBehaviour {
             originMesh,
             frontsideMesh,
             backsideMesh,
-            addCutSurfaceMaterial
+            hasCutSurfaceMaterial
         );
         // ここで、切断面に対する処理を行う
 
